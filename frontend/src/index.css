@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  --color-fashionvs-primary-50: #fdf2f8;
+  --color-fashionvs-primary-100: #fce7f3;
+  --color-fashionvs-primary-200: #fbcfe8;
+  --color-fashionvs-primary-300: #f9a8d4;
+  --color-fashionvs-primary-400: #f472b6;
+  --color-fashionvs-primary-500: #ec4899;
+  --color-fashionvs-primary-600: #db2777;
+  --color-fashionvs-primary-700: #be185d;
+  --color-fashionvs-primary-800: #9d174d;
+  --color-fashionvs-primary-900: #831843;
+
+  --color-fashionvs-secondary-50: #faf5ff;
+  --color-fashionvs-secondary-100: #f3e8ff;
+  --color-fashionvs-secondary-200: #e9d5ff;
+  --color-fashionvs-secondary-300: #d8b4fe;
+  --color-fashionvs-secondary-400: #c084fc;
+  --color-fashionvs-secondary-500: #a855f7;
+  --color-fashionvs-secondary-600: #9333ea;
+  --color-fashionvs-secondary-700: #7c3aed;
+  --color-fashionvs-secondary-800: #6b21a8;
+  --color-fashionvs-secondary-900: #581c87;
+
+  --color-fashionvs-neutral-50: #ffffff;
+  --color-fashionvs-neutral-100: #f9fafb;
+  --color-fashionvs-neutral-200: #f3f4f6;
+  --color-fashionvs-neutral-300: #e5e7eb;
+  --color-fashionvs-neutral-400: #9ca3af;
+  --color-fashionvs-neutral-500: #6b7280;
+  --color-fashionvs-neutral-600: #4b5563;
+  --color-fashionvs-neutral-700: #374151;
+  --color-fashionvs-neutral-800: #1f2937;
+  --color-fashionvs-neutral-900: #111827;
+
+  --color-fashionvs-success: #10b981;
+  --color-fashionvs-warning: #f59e0b;
+  --color-fashionvs-error: #ef4444;
+  --color-fashionvs-info: #8b5cf6;
+
+  --font-family-sans: Inter, system-ui, sans-serif;
+  --font-family-display: 'Playfair Display', serif;
+  --font-family-fashion: Poppins, system-ui, sans-serif;
+
+  --shadow-fashion: 0 8px 32px rgba(219, 39, 119, 0.12);
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Force HMR updates */
+body {
+  font-family: var(--font-family-sans);
+}
+
+/* Custom animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Animation utilities */
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Base styles */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+}

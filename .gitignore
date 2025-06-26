@@ -30,6 +30,22 @@ wheels/
 *.egg
 MANIFEST
 
+# Node.js / Frontend
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
+
+# Frontend build outputs
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/out/
+
 # PyInstaller
 *.manifest
 *.spec
