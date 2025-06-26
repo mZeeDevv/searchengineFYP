@@ -3,10 +3,17 @@
   "builds": [
     {
       "src": "main.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "main.py"
+    },
     {
       "src": "/(.*)",
       "dest": "main.py"
@@ -15,9 +22,6 @@
   "env": {
     "PYTHONPATH": "/var/task"
   },
-  "functions": {
-    "main.py": {
-      "maxDuration": 60
-    }
-  }
+  "buildCommand": "pip install -r requirements.txt",
+  "installCommand": "pip install -r requirements.txt"
 }
