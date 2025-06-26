@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion FYP - Complete Pipeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .pipeline-info {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            border-color: #667eea;
+            background: #f1f3ff;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            margin: 10px;
+        }
+        
+        .file-input-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .process-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            margin: 10px;
+        }
+        
+        .process-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .process-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .file-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 10px;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            color: #666;
+            word-break: break-all;
+        }
+        
+        .firebase-url {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #c62828;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #2e7d32;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Fashion FYP - Complete Pipeline</h1>
+            <p>One-Click: Firebase Storage + AI Embeddings + Vector Database</p>
+            
+            <div class="pipeline-info">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>Upload image to Firebase Storage</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>Generate AI embeddings using ResNet50</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>Store embeddings + Firebase URL in Qdrant</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="upload-section">
+                <h3 style="margin-bottom: 20px; color: #333;">Complete Pipeline Processing</h3>
+                
+                <!-- User ID Input -->
+                <div style="margin-bottom: 20px;">
+                    <label for="userId" style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">
+                        👤 Firebase User ID (Optional):
+                    </label>
+                    <input 
+                        type="text" 
+                        id="userId" 
+                        placeholder="Enter Firebase User UID (leave empty for anonymous)" 
+                        style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 10px; font-size: 14px; transition: border-color 0.3s ease;"
+                        onmouseover="this.style.borderColor='#667eea'"
+                        onmouseout="this.style.borderColor='#dee2e6'"
+                        onfocus="this.style.borderColor='#667eea'; this.style.outline='none'"
+                        onblur="this.style.borderColor='#dee2e6'"
+                    >
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        💡 If no User ID is provided, the image will be stored as anonymous (null user_id)
+                    </small>
+                </div>
+                
+                <!-- File Input -->
+                <div class="file-input-wrapper">
+                    <input type="file" id="imageFile" class="file-input" accept="image/*">
+                    <label for="imageFile" class="file-input-button">Choose Image</label>
+                </div>
+                <button id="processBtn" class="process-button" disabled>🚀 Run Complete Pipeline</button>
+                
+                <div id="fileInfo" class="file-info" style="display: none;">
+                    <strong>Selected File:</strong> <span id="fileName"></span><br>
+                    <strong>Size:</strong> <span id="fileSize"></span><br>
+                    <strong>Type:</strong> <span id="fileType"></span>
+                </div>
+            </div>
+            
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p id="loadingText">Processing complete pipeline...</p>
+            </div>
+            
+            <div id="results" class="results">
+                <h3 style="margin-bottom: 20px; color: #333;">✨ Pipeline Results</h3>
+                
+                <div class="result-item">
+                    <div class="result-label">Vector ID:</div>
+                    <div class="result-value" id="vectorId"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Firebase URL:</div>
+                    <div class="firebase-url" id="firebaseUrl"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Processing Time:</div>
+                    <div class="result-value" id="processingTime"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Embedding Shape:</div>
+                    <div class="result-value" id="embeddingShape"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Model Used:</div>
+                    <div class="result-value" id="modelUsed"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Firebase Path:</div>
+                    <div class="result-value" id="firebasePath"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">User ID:</div>
+                    <div class="result-value" id="userIdResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const imageFile = document.getElementById('imageFile');
+        const processBtn = document.getElementById('processBtn');
+        const fileInfo = document.getElementById('fileInfo');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const loadingText = document.getElementById('loadingText');
+
+        // File selection
+        imageFile.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                document.getElementById('fileType').textContent = file.type;
+                fileInfo.style.display = 'block';
+                processBtn.disabled = false;
+                results.classList.remove('show');
+            }
+        });
+
+        // Process complete pipeline
+        processBtn.addEventListener('click', async function() {
+            const file = imageFile.files[0];
+            if (!file) return;
+
+            loading.style.display = 'block';
+            loadingText.textContent = 'Running complete pipeline: Firebase → AI → Qdrant...';
+            processBtn.disabled = true;
+
+            try {
+                // Get user ID from input field
+                const userId = document.getElementById('userId').value.trim();
+                
+                // Create FormData
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Add user ID if provided
+                if (userId) {
+                    formData.append('user_id', userId);
+                    console.log('👤 Including User ID:', userId);
+                } else {
+                    console.log('👤 No User ID provided - will store as anonymous');
+                }
+
+                // Call the unified endpoint
+                const response = await fetch('/api/v1/vectors/upload-and-store', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Display results
+                    document.getElementById('vectorId').textContent = result.vector_id;
+                    document.getElementById('firebaseUrl').textContent = result.firebase_url;
+                    document.getElementById('processingTime').textContent = result.processing_time + ' seconds';
+                    document.getElementById('embeddingShape').textContent = `[${result.embedding_shape.join(', ')}]`;
+                    document.getElementById('modelUsed').textContent = result.model_used;
+                    document.getElementById('firebasePath').textContent = result.firebase_path;
+                    
+                    // Display user ID (show from the input or indicate anonymous)
+                    const userIdInput = document.getElementById('userId').value.trim();
+                    document.getElementById('userIdResult').textContent = userIdInput || 'Anonymous (null)';
+                    document.getElementById('userIdResult').style.color = userIdInput ? '#2e7d32' : '#666';
+
+                    results.classList.add('show');
+
+                    // Show success message
+                    const successDiv = document.createElement('div');
+                    successDiv.className = 'success';
+                    successDiv.innerHTML = `<strong>🎉 Complete Pipeline Success!</strong><br>${result.message}`;
+                    document.querySelector('.content').appendChild(successDiv);
+                    setTimeout(() => successDiv.remove(), 8000);
+
+                } else {
+                    throw new Error(result.detail || 'Unknown error');
+                }
+
+            } catch (error) {
+                console.error('Pipeline error:', error);
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.innerHTML = `<strong>Pipeline Error:</strong> ${error.message}`;
+                document.querySelector('.content').appendChild(errorDiv);
+                setTimeout(() => errorDiv.remove(), 5000);
+            } finally {
+                loading.style.display = 'none';
+                processBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

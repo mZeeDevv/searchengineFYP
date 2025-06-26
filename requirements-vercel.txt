@@ -1,0 +1,25 @@
+# Core FastAPI requirements
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.5.0
+
+# Image processing (lightweight for serverless)
+Pillow==10.1.0
+requests==2.31.0
+
+# TensorFlow (consider using tensorflow-cpu for smaller size)
+tensorflow==2.15.0
+numpy==1.24.3
+
+# Vector database
+qdrant-client==1.7.0
+
+# Firebase (lightweight - no admin SDK needed for REST API)
+# firebase-admin==6.4.0  # Comment out if not needed
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Additional serverless optimizations
+mangum==0.17.0

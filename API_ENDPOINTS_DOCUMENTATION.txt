@@ -1,0 +1,372 @@
+# Fashion FYP - FastAPI Endpoints Documentation
+
+## Base URL: http://localhost:8000
+
+---
+
+# Fashion FYP - FastAPI Endpoints Documentation
+
+## Base URL: http://localhost:8000
+
+---
+
+## 🔵 VECTOR DATABASE ENDPOINTS
+
+### 1. POST /api/v1/vectors/upload-and-store ✅ **UNIFIED ENDPOINT**
+**Description**: Complete pipeline - Upload image to Fi**Vector Database**: Qdrant Cloud
+
+---
+
+## 📊 ENDPOINT SUMMARY
+
+**Total Endpoints**: 13
+- **Vector Database**: 7 endpoints
+- **Image Processing**: 2 endpoints  
+- **Static & Documentation**: 4 routes
+
+**Key Changes Made**:
+- ✅ **MERGED** old endpoints into `/api/v1/vectors/upload-and-store` (complete pipeline)
+- ✅ **REMOVED** localhost URL fallbacks - only real Firebase URLs now
+- ✅ **ADDED** complete pipeline interface at `/static/complete_pipeline.html`
+- ✅ **STREAMLINED** workflow: One endpoint handles Firebase upload + AI embeddings + Qdrant storage
+
+**Recommended Workflow**:
+1. Use `/static/complete_pipeline.html` for uploading images
+2. Use `/static/similar_search.html` for finding similar images
+3. Use `/api/v1/vectors/upload-and-store` for programmatic accessebase Storage → Generate AI embeddings → Store in Qdrant
+**Status**: ✅ RECOMMENDED (One-stop solution for complete workflow)
+**Method**: POST
+**Content-Type**: multipart/form-data
+**Parameters**:
+- `file` (required): Image file (JPEG, PNG, GIF, WebP supported, max 10MB)
+
+**Process Flow**:
+1. 🔥 **Step 1**: Uploads image to Firebase Storage (real Firebase URLs)
+2. 🤖 **Step 2**: Generates AI embeddings using ResNet50/TensorFlow
+3. 📊 **Step 3**: Stores embeddings + Firebase URL in Qdrant vector database
+
+**Response**:
+```json
+{
+  "id": "processing-id",
+  "vector_id": "uuid",
+  "filename": "image.jpg",
+  "message": "✅ COMPLETE PIPELINE SUCCESS: Image 'image.jpg' → Firebase Storage → AI Embeddings → Qdrant Database. Vector ID: uuid",
+  "embedding_status": "completed",
+  "vector_stored": true,
+  "processing_time": 2.5,
+  "embeddings_preview": [0.123, 0.456, ...],
+  "embedding_shape": [2048],
+  "model_used": "ResNet50",
+  "embedding_stats": {
+    "min_value": 0.0,
+    "max_value": 1.0,
+    "avg_value": 0.3,
+    "non_zero_count": 1500,
+    "total_dimensions": 2048
+  },
+  "firebase_url": "https://firebasestorage.googleapis.com/...", // ✅ Real Firebase URL
+  "firebase_path": "fashion_images/filename",
+  "firebase_uploaded": true
+}
+```
+
+---
+
+### 2. POST /api/v1/vectors/search
+**Description**: Upload an image and find similar images in the database
+**Method**: POST
+**Content-Type**: multipart/form-data
+**Parameters**:
+- `file` (required): Image file for similarity search
+- `threshold` (optional): Minimum similarity score (0.0-1.0, default: 0.7)
+- `limit` (optional): Maximum number of results (1-50, default: 10)
+
+**Response**:
+```json
+{
+  "query_filename": "search_image.jpg",
+  "similar_images": [
+    {
+      "id": "vector-id",
+      "score": 0.95,
+      "metadata": {
+        "filename": "similar_image.jpg",
+        "firebase_url": "https://firebasestorage.googleapis.com/...",
+        "upload_timestamp": "2025-06-24T10:30:00"
+      }
+    }
+  ],
+  "total_results": 5,
+  "search_time": 0.1,
+  "threshold": 0.7
+}
+```
+
+---
+
+### 3. POST /api/v1/vectors/find-similar-complete
+**Description**: Upload an image, find similar images, and return complete embedding data for all results
+**Method**: POST
+**Content-Type**: multipart/form-data
+**Parameters**:
+- `file` (required): Image file for similarity search
+- `threshold` (optional): Minimum similarity score (0.0-1.0, default: 0.7)
+- `limit` (optional): Maximum number of results (1-50, default: 10)
+- `include_query_embedding` (optional): Include query image's full embedding (default: false)
+
+**Response**:
+```json
+{
+  "query_id": "uuid",
+  "query_filename": "search_image.jpg",
+  "query_embedding_preview": [0.123, 0.456, ...],
+  "query_embedding_stats": {...},
+  "search_time": 0.5,
+  "total_similar_found": 5,
+  "similarity_threshold": 0.7,
+  "similar_embeddings": [
+    {
+      "vector_id": "uuid",
+      "filename": "similar_image.jpg",
+      "similarity_score": 0.95,
+      "firebase_url": "https://firebasestorage.googleapis.com/...",
+      "embedding_full": [2048 dimensions array],
+      "embedding_preview": [first 20 values],
+      "embedding_stats": {...},
+      "metadata": {...}
+    }
+  ],
+  "message": "Found 5 similar images..."
+}
+```
+
+---
+
+### 4. GET /api/v1/vectors/get/{vector_id}
+**Description**: Retrieve a stored embedding by its vector ID
+**Method**: GET
+**Parameters**:
+- `vector_id` (path): The unique ID of the stored vector
+- `include_full_embedding` (query, optional): Include full 2048-dimensional embedding (default: false)
+
+**Response**:
+```json
+{
+  "vector_id": "uuid",
+  "filename": "image.jpg",
+  "embedding_status": "found",
+  "vector_found": true,
+  "embeddings_preview": [first 100 values],
+  "embedding_shape": [2048],
+  "embedding_stats": {...},
+  "metadata": {
+    "firebase_url": "https://firebasestorage.googleapis.com/...",
+    "upload_timestamp": "2025-06-24T10:30:00",
+    "processing_time": 2.5
+  },
+  "model_used": "ResNet50",
+  "embedding_full": [2048 dimensions] // Only if include_full_embedding=true
+}
+```
+
+---
+
+### 5. GET /api/v1/vectors/list
+**Description**: List all stored embeddings with their metadata
+**Method**: GET
+**Parameters**:
+- `limit` (query, optional): Number of embeddings to return (1-100, default: 10)
+- `include_previews` (query, optional): Include embedding previews (default: true)
+
+**Response**:
+```json
+{
+  "total_embeddings": 25,
+  "collection_info": {
+    "vectors_count": 25,
+    "indexed_vectors_count": 25,
+    "points_count": 25
+  },
+  "embeddings": [
+    {
+      "vector_id": "uuid",
+      "filename": "image.jpg",
+      "model_used": "ResNet50",
+      "upload_timestamp": "2025-06-24T10:30:00",
+      "file_size": 1024000,
+      "content_type": "image/jpeg",
+      "processing_time": 2.5,
+      "firebase_url": "https://firebasestorage.googleapis.com/...",
+      "embedding_preview": [first 10 values],
+      "embedding_length": 2048,
+      "embedding_stats": {...}
+    }
+  ],
+  "limit_applied": 10,
+  "includes_previews": true
+}
+```
+
+---
+
+### 6. GET /api/v1/vectors/collection/info
+**Description**: Get information about the vector database collection
+**Method**: GET
+**Parameters**: None
+
+**Response**:
+```json
+{
+  "collection_name": "fashion_embeddings",
+  "status": "active",
+  "info": {
+    "vectors_count": 25,
+    "indexed_vectors_count": 25,
+    "points_count": 25,
+    "segments_count": 1,
+    "config": {...}
+  }
+}
+```
+
+---
+
+### 7. GET /api/v1/vectors/health
+**Description**: Health check for vector database service
+**Method**: GET
+**Parameters**: None
+
+**Response**:
+```json
+{
+  "status": "healthy",
+  "service": "vector_database",
+  "qdrant_connection": "active",
+  "collection": "fashion_embeddings"
+}
+```
+
+---
+
+## 🔵 IMAGE PROCESSING ENDPOINTS
+
+### 8. POST /api/v1/images/embeddings
+**Description**: Generate embeddings for an uploaded image without storing
+**Method**: POST
+**Content-Type**: multipart/form-data
+**Parameters**:
+- `file` (required): Image file
+
+**Response**:
+```json
+{
+  "filename": "image.jpg",
+  "embeddings": [2048 dimensions array],
+  "shape": [2048],
+  "model_used": "ResNet50",
+  "processing_time": 1.5,
+  "stats": {
+    "min_value": 0.0,
+    "max_value": 1.0,
+    "avg_value": 0.3,
+    "non_zero_count": 1500
+  }
+}
+```
+
+---
+
+### 9. GET /api/v1/images/model-info
+**Description**: Get information about the AI model used for embeddings
+**Method**: GET
+**Parameters**: None
+
+**Response**:
+```json
+{
+  "model_name": "ResNet50",
+  "input_shape": [224, 224, 3],
+  "output_shape": [2048],
+  "framework": "TensorFlow",
+  "preprocessing": "ImageNet normalization"
+}
+```
+
+---
+
+## 🔵 STATIC ROUTES
+
+### 10. GET /
+**Description**: Serve the main vector database interface
+**Method**: GET
+**Returns**: HTML page (vector_database.html)
+
+---
+
+### 11. GET /static/{file_path}
+**Description**: Serve static files (HTML, CSS, JS, images)
+**Method**: GET
+**Examples**:
+- `/static/firebase_upload.html` - Firebase upload interface (✅ Real Firebase URLs)
+- `/static/similar_search.html` - Similar image search interface
+- `/static/uploads/image.jpg` - Uploaded images
+
+---
+
+## 🔵 DOCUMENTATION ROUTES
+
+### 12. GET /docs
+**Description**: FastAPI auto-generated interactive API documentation (Swagger UI)
+**Method**: GET
+**Returns**: Interactive API documentation
+
+---
+
+### 13. GET /redoc
+**Description**: FastAPI auto-generated API documentation (ReDoc)
+**Method**: GET
+**Returns**: Alternative API documentation format
+
+---
+
+## ⚡ USAGE RECOMMENDATIONS
+
+### For Complete Workflow (RECOMMENDED):
+1. ✅ **Use**: `/static/complete_pipeline.html` page (new unified interface)
+2. ✅ **Use**: `/api/v1/vectors/upload-and-store` endpoint (handles everything)
+
+### For Similar Image Search:
+1. ✅ **Use**: `/static/similar_search.html` page
+2. ✅ **Use**: `/api/v1/vectors/find-similar-complete` endpoint
+
+### Legacy Options (if needed):
+1. ⚠️ **Legacy**: `/static/firebase_upload.html` (client-side Firebase upload)
+2. ⚠️ **Legacy**: `/static/vector_database.html` (basic interface)
+
+---
+
+## 🔧 ERROR RESPONSES
+
+All endpoints return standard HTTP error codes:
+- **400**: Bad Request (invalid file type, size, parameters)
+- **404**: Not Found (vector ID not found)
+- **422**: Validation Error (missing required parameters)
+- **500**: Internal Server Error (processing errors)
+
+Error response format:
+```json
+{
+  "detail": "Error description"
+}
+```
+
+---
+
+## 📊 SUPPORTED FILE TYPES
+
+**Image formats**: JPEG, JPG, PNG, GIF, WebP
+**Maximum file size**: 10MB
+**AI Model**: ResNet50 (TensorFlow)
+**Embedding dimensions**: 2048
+**Vector database**: Qdrant Cloud

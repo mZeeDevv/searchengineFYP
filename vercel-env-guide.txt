@@ -1,0 +1,38 @@
+# Vercel Environment Variables Configuration Guide
+# 
+# In your Vercel dashboard, go to Settings > Environment Variables
+# and add all these variables:
+
+# Qdrant Vector Database Configuration
+QDRANT_URL=your_qdrant_cluster_url_here
+QDRANT_API_KEY=your_qdrant_api_key_here
+QDRANT_COLLECTION_NAME=fashion_embeddings
+
+# Firebase Configuration
+FIREBASE_API_KEY=your_firebase_api_key
+FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+FIREBASE_APP_ID=your_firebase_app_id
+FIREBASE_MEASUREMENT_ID=your_measurement_id
+
+# Firebase Storage Configuration
+FIREBASE_STORAGE_BUCKET_NAME=your_project_id.firebasestorage.app
+FIREBASE_SERVICE_ACCOUNT_PATH=
+
+# Application Configuration
+MAX_FILE_SIZE_MB=10
+ALLOWED_IMAGE_TYPES=image/jpeg,image/jpg,image/png,image/gif,image/webp
+VECTOR_SIZE=2048
+
+# Production Configuration for Vercel
+DEBUG_MODE=false
+FIREBASE_MOCK_MODE=false
+VERCEL=1
+
+# Notes:
+# 1. Copy your actual values from .env file
+# 2. Set FIREBASE_MOCK_MODE=false for production
+# 3. Make sure QDRANT_URL and QDRANT_API_KEY are correct
+# 4. Firebase configuration should match your Firebase project

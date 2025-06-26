@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion FYP - Image Upload</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .upload-section {
+            margin-bottom: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background-color: #f8f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background-color: #f0f4ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s ease;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        .status-indicator.online {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-indicator.offline {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .file-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .endpoint-test {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .endpoint-test h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .endpoint-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.online {
+            background-color: #28a745;
+        }
+
+        .status-dot.offline {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Fashion FYP</h1>
+            <p>Upload images to test the embedding generation endpoint</p>
+        </div>
+
+        <!-- API Status Check -->
+        <div id="apiStatus" class="status-indicator offline">
+            <div class="spinner" id="statusSpinner"></div>
+            <span id="statusText">Checking API status...</span>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">
+                    <strong>Click to upload</strong> or drag and drop your image here
+                </div>
+                <div>Supported formats: JPEG, PNG, GIF, WebP (Max: 10MB)</div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
+            </div>
+
+            <div class="file-info" id="fileInfo">
+                <strong>Selected file:</strong>
+                <div id="fileName"></div>
+                <div id="fileSize"></div>
+                <div id="fileType"></div>
+            </div>
+
+            <button class="btn" id="uploadBtn" disabled>
+                <span id="uploadBtnText">Select an image first</span>
+            </button>
+
+            <button class="btn" id="embeddingBtn" disabled>
+                <span id="embeddingBtnText">Get Embeddings</span>
+            </button>
+        </div>
+
+        <!-- Result Display -->
+        <div id="result" class="result">
+            <div id="resultContent"></div>
+        </div>
+
+        <!-- Endpoint Status -->
+        <div class="endpoint-test">
+            <h3>API Endpoints Status</h3>
+            <div class="endpoint-item">
+                <span>Health Check</span>
+                <span class="status-dot offline" id="healthStatus"></span>
+            </div>
+            <div class="endpoint-item">
+                <span>Image Upload</span>
+                <span class="status-dot offline" id="uploadStatus"></span>
+            </div>
+            <div class="endpoint-item">
+                <span>Get Embeddings</span>
+                <span class="status-dot offline" id="embeddingStatus"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let selectedFile = null;
+
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const embeddingBtn = document.getElementById('embeddingBtn');
+        const result = document.getElementById('result');
+        const apiStatus = document.getElementById('apiStatus');
+        const statusText = document.getElementById('statusText');
+        const statusSpinner = document.getElementById('statusSpinner');
+
+        // Check API status on load
+        checkApiStatus();
+
+        // File upload handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', handleDragOver);
+        uploadArea.addEventListener('dragleave', handleDragLeave);
+        uploadArea.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+        uploadBtn.addEventListener('click', uploadFile);
+        embeddingBtn.addEventListener('click', getEmbeddings);
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            selectedFile = file;
+            
+            // Display file info
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = `Size: ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            document.getElementById('fileType').textContent = `Type: ${file.type}`;
+            
+            fileInfo.style.display = 'block';
+            uploadBtn.disabled = false;
+            embeddingBtn.disabled = false;
+            document.getElementById('uploadBtnText').textContent = 'Upload Image';
+            document.getElementById('embeddingBtnText').textContent = 'Get Embeddings';
+        }
+
+        async function checkApiStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/health`);
+                if (response.ok) {
+                    apiStatus.className = 'status-indicator online';
+                    statusText.textContent = 'API is online and ready';
+                    statusSpinner.style.display = 'none';
+                    
+                    // Check individual endpoints
+                    checkEndpoints();
+                } else {
+                    throw new Error('API not responding');
+                }
+            } catch (error) {
+                apiStatus.className = 'status-indicator offline';
+                statusText.textContent = 'API is offline';
+                statusSpinner.style.display = 'none';
+            }
+        }
+
+        async function checkEndpoints() {
+            // Health check
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/health`);
+                document.getElementById('healthStatus').className = response.ok ? 'status-dot online' : 'status-dot offline';
+            } catch {
+                document.getElementById('healthStatus').className = 'status-dot offline';
+            }
+
+            // Note: We can't easily test upload endpoints without files, so we'll mark them as online if health check passes
+            document.getElementById('uploadStatus').className = 'status-dot online';
+            document.getElementById('embeddingStatus').className = 'status-dot online';
+        }
+
+        async function uploadFile() {
+            if (!selectedFile) return;
+
+            uploadBtn.disabled = true;
+            document.getElementById('uploadBtnText').innerHTML = '<div class="spinner"></div> Uploading...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('success', `
+                        <strong>Upload Successful!</strong><br>
+                        File ID: ${data.id}<br>
+                        Filename: ${data.filename}<br>
+                        Size: ${data.file_size} bytes<br>
+                        Type: ${data.content_type}
+                    `);
+                } else {
+                    showResult('error', `Upload failed: ${data.detail || 'Unknown error'}`);
+                }
+            } catch (error) {
+                showResult('error', `Upload failed: ${error.message}`);
+            } finally {
+                uploadBtn.disabled = false;
+                document.getElementById('uploadBtnText').textContent = 'Upload Image';
+            }
+        }
+
+        async function getEmbeddings() {
+            if (!selectedFile) return;
+
+            embeddingBtn.disabled = true;
+            document.getElementById('embeddingBtnText').innerHTML = '<div class="spinner"></div> Processing...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/getembeddings`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('success', `
+                        <strong>Embeddings Generated Successfully!</strong><br>
+                        Processing ID: ${data.id}<br>
+                        Filename: ${data.filename}<br>
+                        Status: ${data.embedding_status}<br>
+                        Processing Time: ${data.processing_time}s<br>
+                        Message: ${data.message}
+                    `);
+                } else {
+                    showResult('error', `Embedding generation failed: ${data.detail || 'Unknown error'}`);
+                }
+            } catch (error) {
+                showResult('error', `Embedding generation failed: ${error.message}`);
+            } finally {
+                embeddingBtn.disabled = false;
+                document.getElementById('embeddingBtnText').textContent = 'Get Embeddings';
+            }
+        }
+
+        function showResult(type, content) {
+            result.className = `result ${type}`;
+            document.getElementById('resultContent').innerHTML = content;
+            result.style.display = 'block';
+        }
+
+        // Refresh API status every 30 seconds
+        setInterval(checkApiStatus, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion FYP - Image Embeddings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            border-color: #667eea;
+            background: #f1f3ff;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            margin: 10px;
+        }
+        
+        .file-input-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .process-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            margin: 10px;
+        }
+        
+        .process-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .process-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .file-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 10px;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            color: #666;
+            word-break: break-all;
+        }
+        
+        .embeddings-preview {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f1f3f4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #c62828;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #2e7d32;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Fashion FYP</h1>
+            <p>AI-Powered Image Embeddings Generator</p>
+        </div>
+        
+        <div class="content">
+            <div class="upload-section">
+                <h3 style="margin-bottom: 20px; color: #333;">Upload Your Fashion Image</h3>
+                <div class="file-input-wrapper">
+                    <input type="file" id="imageFile" class="file-input" accept="image/*">
+                    <label for="imageFile" class="file-input-button">Choose Image</label>
+                </div>
+                <button id="processBtn" class="process-button" disabled>Generate Embeddings</button>
+                
+                <div id="fileInfo" class="file-info" style="display: none;">
+                    <strong>Selected File:</strong> <span id="fileName"></span><br>
+                    <strong>Size:</strong> <span id="fileSize"></span><br>
+                    <strong>Type:</strong> <span id="fileType"></span>
+                </div>
+            </div>
+            
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Processing your image and generating embeddings...</p>
+            </div>
+            
+            <div id="results" class="results">
+                <h3 style="margin-bottom: 20px; color: #333;">✨ Embedding Results</h3>
+                
+                <div class="result-item">
+                    <div class="result-label">Processing ID:</div>
+                    <div class="result-value" id="processingId"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Model Used:</div>
+                    <div class="result-value" id="modelUsed"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Embedding Shape:</div>
+                    <div class="result-value" id="embeddingShape"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Processing Time:</div>
+                    <div class="result-value" id="processingTime"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Status Message:</div>
+                    <div class="result-value" id="statusMessage"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Embeddings Preview (First 50 values):</div>
+                    <div class="embeddings-preview" id="embeddingsPreview"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const imageFile = document.getElementById('imageFile');
+        const processBtn = document.getElementById('processBtn');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileType = document.getElementById('fileType');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+
+        imageFile.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                fileSize.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                fileType.textContent = file.type;
+                fileInfo.style.display = 'block';
+                processBtn.disabled = false;
+                results.classList.remove('show');
+            } else {
+                fileInfo.style.display = 'none';
+                processBtn.disabled = true;
+            }
+        });
+
+        processBtn.addEventListener('click', async function() {
+            const file = imageFile.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            loading.style.display = 'block';
+            results.classList.remove('show');
+            processBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/getembeddings', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Display success results
+                    document.getElementById('processingId').textContent = result.id;
+                    document.getElementById('modelUsed').textContent = result.model_used || 'ResNet50';
+                    document.getElementById('embeddingShape').textContent = result.embedding_shape ? 
+                        `[${result.embedding_shape.join(', ')}]` : 'N/A';
+                    document.getElementById('processingTime').textContent = result.processing_time + ' seconds';
+                    document.getElementById('statusMessage').textContent = result.message;
+                    
+                    if (result.embeddings) {
+                        const embeddingsText = result.embeddings.map((val, idx) => 
+                            `[${idx}]: ${val.toFixed(6)}`
+                        ).join('\n');
+                        document.getElementById('embeddingsPreview').textContent = embeddingsText;
+                    } else {
+                        document.getElementById('embeddingsPreview').textContent = 'No embeddings data available';
+                    }
+
+                    results.classList.add('show');
+                } else {
+                    // Display error
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error';
+                    errorDiv.innerHTML = `<strong>Error:</strong> ${result.detail || 'Unknown error occurred'}`;
+                    document.querySelector('.content').appendChild(errorDiv);
+                    
+                    setTimeout(() => errorDiv.remove(), 5000);
+                }
+
+            } catch (error) {
+                // Display network error
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.innerHTML = `<strong>Network Error:</strong> ${error.message}`;
+                document.querySelector('.content').appendChild(errorDiv);
+                
+                setTimeout(() => errorDiv.remove(), 5000);
+            } finally {
+                loading.style.display = 'none';
+                processBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

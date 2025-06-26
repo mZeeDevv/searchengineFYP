@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion FYP - Firebase Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            border-color: #667eea;
+            background: #f1f3ff;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            margin: 10px;
+        }
+        
+        .file-input-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .process-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            margin: 10px;
+        }
+        
+        .process-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .process-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .file-info, .firebase-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 10px;
+        }
+        
+        .firebase-info {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            color: #666;
+            word-break: break-all;
+        }
+        
+        .firebase-url {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #c62828;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #2e7d32;
+            margin: 20px 0;
+        }
+        
+        .step {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: white;
+        }
+        
+        .step h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .step.completed {
+            border-color: #4caf50;
+            background: #f1f8e9;
+        }
+        
+        .step.active {
+            border-color: #2196f3;
+            background: #e3f2fd;
+        }
+        
+        .url-display {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 11px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">        <div class="header">
+            <h1>🔥 Fashion FYP - Firebase Integration</h1>
+            <p>Real Firebase Storage Upload + AI Embeddings</p>
+            <div style="background: rgba(255,255,255,0.2); padding: 15px; margin-top: 15px; border-radius: 10px; font-size: 14px;">
+                ✅ This page uploads images directly to <strong>REAL Firebase Storage</strong><br>
+                ✅ No localhost URLs - only genuine Firebase download links<br>
+                ✅ Use this for production-ready image processing
+            </div>
+        </div>
+          <div class="content">
+            <div style="margin-bottom: 20px; text-align: center;">
+                <a href="/" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; margin: 0 10px; font-weight: 600;">🏠 Main Dashboard</a>
+                <a href="/search" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; margin: 0 10px; font-weight: 600;">🔍 Similar Search</a>
+                <a href="/embeddings" style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; margin: 0 10px; font-weight: 600;">📊 View Embeddings</a>
+            </div>
+            
+            <div class="upload-section">
+                <h3 style="margin-bottom: 20px; color: #333;">Upload to Firebase Storage</h3>
+                <div class="file-input-wrapper">
+                    <input type="file" id="imageFile" class="file-input" accept="image/*">
+                    <label for="imageFile" class="file-input-button">Choose Image</label>
+                </div>
+                <button id="uploadBtn" class="process-button" disabled>Upload to Firebase</button>
+                <button id="generateEmbeddingsBtn" class="process-button" disabled>Generate Embeddings</button>
+                
+                <div id="fileInfo" class="file-info" style="display: none;">
+                    <strong>Selected File:</strong> <span id="fileName"></span><br>
+                    <strong>Size:</strong> <span id="fileSize"></span><br>
+                    <strong>Type:</strong> <span id="fileType"></span>
+                </div>
+                
+                <div id="firebaseInfo" class="firebase-info" style="display: none;">
+                    <h4>🔥 Firebase Upload Result:</h4>
+                    <strong>Firebase URL:</strong>
+                    <div class="url-display" id="firebaseUrl"></div>
+                    <strong>Firebase Path:</strong> <span id="firebasePath"></span><br>
+                    <strong>Status:</strong> <span id="firebaseStatus"></span>
+                </div>
+            </div>
+            
+            <div class="step" id="step1">
+                <h4>Step 1: Select Image</h4>
+                <p>Choose an image file to upload to Firebase Storage</p>
+            </div>
+            
+            <div class="step" id="step2">
+                <h4>Step 2: Upload to Firebase</h4>
+                <p>Upload your image directly to Firebase Storage</p>
+            </div>
+            
+            <div class="step" id="step3">
+                <h4>Step 3: Generate Embeddings</h4>
+                <p>Process the Firebase image and generate AI embeddings</p>
+            </div>
+            
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p id="loadingText">Processing...</p>
+            </div>
+            
+            <div id="results" class="results">
+                <h3 style="margin-bottom: 20px; color: #333;">✨ Results</h3>
+                
+                <div class="result-item">
+                    <div class="result-label">Vector ID:</div>
+                    <div class="result-value" id="vectorId"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Firebase URL (Stored):</div>
+                    <div class="firebase-url" id="storedFirebaseUrl"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Processing Time:</div>
+                    <div class="result-value" id="processingTime"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Embedding Shape:</div>
+                    <div class="result-value" id="embeddingShape"></div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Model Used:</div>
+                    <div class="result-value" id="modelUsed"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuaOYbXpf3S3cZ3uCKIWC4J4PU4VtrEPA",
+            authDomain: "visual-search-fyp-a5eb6.firebaseapp.com",
+            projectId: "visual-search-fyp-a5eb6",
+            storageBucket: "visual-search-fyp-a5eb6.firebasestorage.app",
+            messagingSenderId: "35895026266",
+            appId: "1:35895026266:web:5ec393a4554ec1a92b2e63",
+            measurementId: "G-P6DNNCPKSJ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+
+        // DOM elements
+        const imageFile = document.getElementById('imageFile');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const generateEmbeddingsBtn = document.getElementById('generateEmbeddingsBtn');
+        const fileInfo = document.getElementById('fileInfo');
+        const firebaseInfo = document.getElementById('firebaseInfo');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const loadingText = document.getElementById('loadingText');
+
+        let currentFirebaseUrl = '';
+        let currentFirebasePath = '';
+        let currentFileName = '';
+
+        // File selection
+        imageFile.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                document.getElementById('fileType').textContent = file.type;
+                fileInfo.style.display = 'block';
+                uploadBtn.disabled = false;
+                
+                // Update steps
+                document.getElementById('step1').classList.add('completed');
+                document.getElementById('step2').classList.add('active');
+                
+                // Reset subsequent steps
+                document.getElementById('step3').classList.remove('active', 'completed');
+                generateEmbeddingsBtn.disabled = true;
+                firebaseInfo.style.display = 'none';
+                results.classList.remove('show');
+            }
+        });
+
+        // Firebase upload
+        uploadBtn.addEventListener('click', async function() {
+            const file = imageFile.files[0];
+            if (!file) return;
+
+            loading.style.display = 'block';
+            loadingText.textContent = 'Uploading to Firebase Storage...';
+            uploadBtn.disabled = true;
+
+            try {
+                // Create unique filename
+                const timestamp = Date.now();
+                const uniqueId = Math.random().toString(36).substr(2, 9);
+                const fileName = `${timestamp}_${uniqueId}_${file.name}`;
+                
+                // Upload to Firebase Storage
+                const storageRef = ref(storage, `fashion_images/${fileName}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+
+                // Store Firebase info
+                currentFirebaseUrl = downloadURL;
+                currentFirebasePath = snapshot.ref.fullPath;
+                currentFileName = file.name;
+
+                // Display Firebase info
+                document.getElementById('firebaseUrl').textContent = downloadURL;
+                document.getElementById('firebasePath').textContent = snapshot.ref.fullPath;
+                document.getElementById('firebaseStatus').textContent = 'Upload Successful ✅';
+                firebaseInfo.style.display = 'block';
+
+                // Update steps
+                document.getElementById('step2').classList.add('completed');
+                document.getElementById('step2').classList.remove('active');
+                document.getElementById('step3').classList.add('active');
+                
+                generateEmbeddingsBtn.disabled = false;
+
+                // Show success message
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success';
+                successDiv.innerHTML = `<strong>🎉 Firebase Upload Successful!</strong><br>Image uploaded to: ${downloadURL}`;
+                document.querySelector('.content').appendChild(successDiv);
+                setTimeout(() => successDiv.remove(), 5000);
+
+            } catch (error) {
+                console.error('Firebase upload error:', error);
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.innerHTML = `<strong>Firebase Upload Error:</strong> ${error.message}`;
+                document.querySelector('.content').appendChild(errorDiv);
+                setTimeout(() => errorDiv.remove(), 5000);
+            } finally {
+                loading.style.display = 'none';
+                uploadBtn.disabled = false;
+            }
+        });
+
+        // Generate embeddings
+        generateEmbeddingsBtn.addEventListener('click', async function() {
+            if (!currentFirebaseUrl) return;
+
+            loading.style.display = 'block';
+            loadingText.textContent = 'Generating embeddings from Firebase image...';
+            generateEmbeddingsBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/vectors/store-with-firebase-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        firebase_url: currentFirebaseUrl,
+                        firebase_path: currentFirebasePath,
+                        filename: currentFileName,
+                        content_type: imageFile.files[0].type
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Display results
+                    document.getElementById('vectorId').textContent = result.vector_id;
+                    document.getElementById('storedFirebaseUrl').textContent = result.firebase_url;
+                    document.getElementById('processingTime').textContent = result.processing_time + ' seconds';
+                    document.getElementById('embeddingShape').textContent = `[${result.embedding_shape.join(', ')}]`;
+                    document.getElementById('modelUsed').textContent = result.model_used;
+
+                    results.classList.add('show');
+                    
+                    // Update steps
+                    document.getElementById('step3').classList.add('completed');
+                    document.getElementById('step3').classList.remove('active');
+
+                    // Show success message
+                    const successDiv = document.createElement('div');
+                    successDiv.className = 'success';
+                    successDiv.innerHTML = `<strong>🎉 Embeddings Generated!</strong><br>Vector ID: ${result.vector_id}`;
+                    document.querySelector('.content').appendChild(successDiv);
+                    setTimeout(() => successDiv.remove(), 8000);
+
+                } else {
+                    throw new Error(result.detail || 'Unknown error');
+                }
+
+            } catch (error) {
+                console.error('Embeddings generation error:', error);
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.innerHTML = `<strong>Embeddings Error:</strong> ${error.message}`;
+                document.querySelector('.content').appendChild(errorDiv);
+                setTimeout(() => errorDiv.remove(), 5000);
+            } finally {
+                loading.style.display = 'none';
+                generateEmbeddingsBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
