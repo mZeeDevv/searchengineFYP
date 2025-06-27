@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaBars, FaTimes, FaSignOutAlt, FaCog, FaUserCircle, FaUserShield } from 'react-icons/fa';
+import { FaBars, FaTimes, FaSignOutAlt, FaUserCircle, FaUserShield } from 'react-icons/fa';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useAdmin } from './admin/AdminContext';
@@ -120,41 +120,34 @@ const Header = () => {
                     <FaUserCircle className="h-5 w-5" />
                   )}
                   <span className="truncate max-w-[120px]">
-                    {currentUser.displayName || currentUser.email.split('@')[0]}
+                    {currentUser.email}
                   </span>
                 </button>
                 
                 {/* Profile Dropdown Menu */}
                 {isProfileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-fashionvs-neutral-200 rounded-lg shadow-lg py-1 z-10">
+                  <div className="absolute right-0 mt-2 w-56 bg-white border border-fashionvs-neutral-200 rounded-lg shadow-lg py-1 z-10">
+                    {/* User Email Display */}
+                    <div className="px-4 py-3 border-b border-fashionvs-neutral-200">
+                      <p className="text-sm text-fashionvs-neutral-500">Signed in as</p>
+                      <p className="text-sm font-medium text-fashionvs-neutral-900 truncate">
+                        {currentUser.email}
+                      </p>
+                    </div>
+                    
                     {/* Admin Panel Link */}
                     {isAdmin && (
-                      <>
-                        <Link 
-                          to="/admin" 
-                          className="flex items-center space-x-2 px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 hover:text-blue-800 w-full text-left font-medium"
-                        >
-                          <FaUserShield className="h-4 w-4" />
-                          <span>Admin Panel</span>
-                        </Link>
-                        <hr className="my-1 border-fashionvs-neutral-200" />
-                      </>
+                      <Link 
+                        to="/admin" 
+                        className="flex items-center space-x-2 px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 hover:text-blue-800 w-full text-left font-medium"
+                      >
+                        <FaUserShield className="h-4 w-4" />
+                        <span>Admin Panel</span>
+                      </Link>
                     )}
-                    <Link 
-                      to="/profile" 
-                      className="flex items-center space-x-2 px-4 py-2 text-sm text-fashionvs-neutral-700 hover:bg-fashionvs-primary-50 hover:text-fashionvs-primary-600 w-full text-left"
-                    >
-                      <FaUser className="h-4 w-4" />
-                      <span>My Profile</span>
-                    </Link>
-                    <Link 
-                      to="/settings" 
-                      className="flex items-center space-x-2 px-4 py-2 text-sm text-fashionvs-neutral-700 hover:bg-fashionvs-primary-50 hover:text-fashionvs-primary-600 w-full text-left"
-                    >
-                      <FaCog className="h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
-                    <hr className="my-1 border-fashionvs-neutral-200" />
+                    
+                    {isAdmin && <hr className="my-1 border-fashionvs-neutral-200" />}
+                    
                     <button 
                       onClick={handleLogout} 
                       className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
@@ -170,7 +163,7 @@ const Header = () => {
                 to="/login" 
                 className="flex items-center space-x-2 bg-fashionvs-primary-600 hover:bg-fashionvs-primary-700 text-white px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               >
-                <FaUser className="h-4 w-4" />
+                <FaUserCircle className="h-4 w-4" />
                 <span>Login</span>
               </Link>
             )}
@@ -230,7 +223,7 @@ const Header = () => {
             {/* Mobile: Conditional rendering based on auth state */}
             {currentUser ? (
               <>
-                <div className="px-3 py-2 font-medium text-fashionvs-neutral-700">
+                <div className="px-3 py-2 font-medium text-fashionvs-neutral-700 border-b border-fashionvs-neutral-200">
                   <div className="flex items-center space-x-2 mb-2">
                     {currentUser.photoURL ? (
                       <img 
@@ -242,8 +235,8 @@ const Header = () => {
                       <FaUserCircle className="h-8 w-8 text-fashionvs-neutral-500" />
                     )}
                     <div className="truncate">
-                      <div className="font-medium">{currentUser.displayName || currentUser.email.split('@')[0]}</div>
-                      <div className="text-sm text-fashionvs-neutral-500 truncate">{currentUser.email}</div>
+                      <div className="text-sm text-fashionvs-neutral-500">Signed in as</div>
+                      <div className="font-medium truncate">{currentUser.email}</div>
                     </div>
                   </div>
                 </div>
@@ -257,20 +250,6 @@ const Header = () => {
                     <span>Admin Panel</span>
                   </Link>
                 )}
-                <Link
-                  to="/profile"
-                  className="flex items-center space-x-2 px-3 py-2 text-base font-medium text-fashionvs-neutral-700 hover:text-fashionvs-primary-600 hover:bg-fashionvs-primary-50 rounded-md transition-colors duration-200"
-                >
-                  <FaUser className="h-5 w-5" />
-                  <span>My Profile</span>
-                </Link>
-                <Link
-                  to="/settings"
-                  className="flex items-center space-x-2 px-3 py-2 text-base font-medium text-fashionvs-neutral-700 hover:text-fashionvs-primary-600 hover:bg-fashionvs-primary-50 rounded-md transition-colors duration-200"
-                >
-                  <FaCog className="h-5 w-5" />
-                  <span>Settings</span>
-                </Link>
                 <button
                   onClick={handleLogout}
                   className="flex w-full items-center space-x-2 px-3 py-2 text-base font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
@@ -284,7 +263,7 @@ const Header = () => {
                 to="/login"
                 className="flex items-center space-x-2 mx-3 my-2 px-4 py-2 bg-fashionvs-primary-600 hover:bg-fashionvs-primary-700 text-white text-base font-medium rounded-lg transition-all duration-200 shadow-md"
               >
-                <FaUser className="h-4 w-4" />
+                <FaUserCircle className="h-4 w-4" />
                 <span>Login</span>
               </Link>
             )}

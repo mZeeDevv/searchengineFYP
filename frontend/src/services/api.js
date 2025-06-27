@@ -41,11 +41,22 @@ export const uploadAndStoreImage = async (file, price, productName) => {
 };
 
 // Search for similar images
-export const searchSimilarImages = async (file, limit = 5, threshold = 0.7) => {
+export const searchSimilarImages = async (file, limit = 5, threshold = 0.7, userId = null) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_URL}/api/v1/vectors/search?limit=${limit}&threshold=${threshold}`, {
+  // Build query parameters
+  const queryParams = new URLSearchParams({
+    limit: limit.toString(),
+    threshold: threshold.toString()
+  });
+  
+  // Add user_id if provided
+  if (userId) {
+    queryParams.append('user_id', userId);
+  }
+
+  const response = await fetch(`${API_URL}/api/v1/vectors/search?${queryParams}`, {
     method: 'POST',
     body: formData,
   });
@@ -89,6 +100,20 @@ export const deleteProduct = async (vectorId) => {
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Delete failed: ${response.status} - ${errorText}`);
+  }
+  
+  return response.json();
+};
+
+// Get user recommendations based on search history
+export const getUserRecommendations = async (userId, limit = 5) => {
+  const response = await fetch(`${API_URL}/api/v1/vectors/recommendations/${userId}?limit=${limit}`, {
+    method: 'GET',
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Recommendations failed: ${response.status} - ${errorText}`);
   }
   
   return response.json();

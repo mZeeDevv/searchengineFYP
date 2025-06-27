@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './Pages/Home';
 import AvailableProducts from './Pages/AvailableProducts';
+import RecommendationsPage from './Pages/RecommendationsPage';
 import SearchPage from './components/SearchPage';
 import SimilarSearchPage from './components/SimilarSearchPage';
 import Login from './Pages/auth/Login';
@@ -41,6 +42,7 @@ function App() {
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/available-products" element={<AvailableProducts />} />
+                    <Route path="/recommendations" element={<RecommendationsPage />} />
                     <Route path="/search" element={<SearchPage />} />
                     <Route path="/find-similar" element={<SimilarSearchPage />} />
                     <Route path="/login" element={<Login />} />

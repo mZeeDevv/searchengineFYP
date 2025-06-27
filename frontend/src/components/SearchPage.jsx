@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { uploadAndStoreImage, searchSimilarImages } from '../services/api';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase';
 
 const SearchPage = () => {
   const [file, setFile] = useState(null);
@@ -9,6 +11,16 @@ const SearchPage = () => {
   const [currentStep, setCurrentStep] = useState('upload'); // 'upload', 'search', 'results'
   const [price, setPrice] = useState(''); // For product price
   const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Set up auth state listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleUploadAndStore = async () => {
     if (!file) return;
@@ -40,7 +52,16 @@ const SearchPage = () => {
     
     try {
       console.log('🔍 Searching for similar images...');
-      const searchResult = await searchSimilarImages(file, 5, 0.7);
+      
+      // Pass user ID if user is logged in
+      const userId = currentUser ? currentUser.uid : null;
+      if (userId) {
+        console.log('👤 User is logged in, will save search embeddings for user:', userId);
+      } else {
+        console.log('👤 User is not logged in, search embeddings will not be saved');
+      }
+      
+      const searchResult = await searchSimilarImages(file, 5, 0.7, userId);
       
       console.log('✅ Search successful:', searchResult);
       setResults(searchResult.similar_images || []);

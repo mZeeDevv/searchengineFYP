@@ -178,7 +178,8 @@ async def upload_and_store_complete(
 async def search_similar_images(
     file: UploadFile = File(...),
     limit: int = Query(5, ge=1, le=20, description="Number of similar images to return"),
-    threshold: float = Query(0.7, ge=0.0, le=1.0, description="Minimum similarity score")
+    threshold: float = Query(0.7, ge=0.0, le=1.0, description="Minimum similarity score"),
+    user_id: Optional[str] = Query(None, description="User ID for saving search embeddings (if logged in)")
 ):
     """
     Upload an image and search for similar images in the vector database
@@ -235,6 +236,21 @@ async def search_similar_images(
         search_time = time.time() - start_time
         
         print(f"✅ Search complete - Found {len(similar_results)} similar images in {search_time:.3f}s")
+        
+        # Save user search embeddings if user is logged in
+        if user_id:
+            try:
+                print(f"💾 Saving search embeddings for user: {user_id}")
+                await vector_service.store_user_search_embedding(
+                    user_id=user_id,
+                    query_filename=file.filename,
+                    query_embedding=query_embeddings,
+                    similar_results_count=len(similar_results)
+                )
+                print(f"✅ User search embeddings saved successfully")
+            except Exception as e:
+                print(f"⚠️ Failed to save user search embeddings: {str(e)}")
+                # Don't fail the entire request if search embedding save fails
         
         return SimilarImageResponse(
             query_id=query_id,
@@ -443,4 +459,65 @@ async def complete_similarity_search(
         raise HTTPException(
             status_code=500,
             detail=f"Internal server error during complete similarity search: {str(e)}"
+        )
+
+@router.get("/recommendations/{user_id}")
+async def get_user_recommendations(
+    user_id: str,
+    limit: int = Query(5, ge=1, le=20, description="Number of recommendations to return")
+):
+    """
+    Get product recommendations for a user based on their search history
+    
+    - **user_id**: User's UID from Firebase authentication
+    - **limit**: Maximum number of recommendations (1-20)
+    - Returns: List of recommended products based on user's search patterns
+    """
+    try:
+        print(f"🎯 Getting recommendations for user: {user_id}")
+        
+        recommendations = await vector_service.get_user_recommendations(
+            user_uid=user_id,
+            limit=limit
+        )
+        
+        if not recommendations:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "user_id": user_id,
+                    "recommendations": [],
+                    "total_found": 0,
+                    "message": "No recommendations available. User needs to perform some searches first."
+                }
+            )
+        
+        # Format recommendations for response
+        formatted_recommendations = []
+        for rec in recommendations:
+            formatted_rec = {
+                "id": rec["id"],
+                "score": round(rec["score"], 4),
+                "product_name": rec["metadata"].get("product_name"),
+                "price": rec["metadata"].get("price"),
+                "firebase_url": rec["metadata"].get("firebase_url"),
+                "filename": rec["metadata"].get("filename"),
+                "recommendation_source": rec.get("recommendation_source", {})
+            }
+            formatted_recommendations.append(formatted_rec)
+        
+        print(f"✅ Generated {len(formatted_recommendations)} recommendations for user {user_id}")
+        
+        return {
+            "user_id": user_id,
+            "recommendations": formatted_recommendations,
+            "total_found": len(formatted_recommendations),
+            "message": f"Found {len(formatted_recommendations)} personalized recommendations"
+        }
+        
+    except Exception as e:
+        print(f"❌ Error getting recommendations: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error getting recommendations: {str(e)}"
         )

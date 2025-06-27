@@ -1,7 +1,9 @@
 // Available Products Page
 import React, { useState, useEffect } from 'react';
-import { listAllEmbeddings } from '../services/api';
-import { FaSearch, FaSpinner } from 'react-icons/fa';
+import { listAllEmbeddings, getUserRecommendations } from '../services/api';
+import { FaSearch, FaSpinner, FaHeart, FaStar, FaUser } from 'react-icons/fa';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase';
 
 const AvailableProducts = () => {
   const [products, setProducts] = useState([]);
@@ -11,6 +13,24 @@ const AvailableProducts = () => {
   const [displayCount, setDisplayCount] = useState(12); // Start with 12 products in grid
   const [loadingMore, setLoadingMore] = useState(false);
   const [sortBy, setSortBy] = useState('newest'); // newest, oldest, price-low, price-high
+  
+  // Recommendations state
+  const [currentUser, setCurrentUser] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(false);
+
+  // Set up auth state listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (user) {
+        fetchRecommendations(user.uid);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     fetchProducts();
@@ -26,6 +46,20 @@ const AvailableProducts = () => {
       setError('Failed to load products');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRecommendations = async (userId) => {
+    try {
+      setRecommendationsLoading(true);
+      const response = await getUserRecommendations(userId, 8); // Get 8 recommendations
+      setRecommendations(response.recommendations || []);
+      setShowRecommendations(response.recommendations && response.recommendations.length > 0);
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      setShowRecommendations(false);
+    } finally {
+      setRecommendationsLoading(false);
     }
   };
 
@@ -114,6 +148,107 @@ const AvailableProducts = () => {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Available Products
           </h1>
+          <p className="text-xl text-gray-600">
+            Discover our curated collection of fashion items
+          </p>
+        </div>
+
+        {/* Recommendations Section - Only show for logged in users with recommendations */}
+        {currentUser && showRecommendations && (
+          <div className="mb-12">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <FaHeart className="h-6 w-6 text-pink-600 mr-3" />
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Recommended For You
+                  </h2>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <FaUser className="mr-2" />
+                  <span>Based on your search history</span>
+                </div>
+              </div>
+              
+              {recommendationsLoading ? (
+                <div className="text-center py-8">
+                  <FaSpinner className="animate-spin text-2xl text-purple-600 mx-auto mb-2" />
+                  <p className="text-gray-600">Loading your recommendations...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                  {recommendations.map((item, index) => (
+                    <div
+                      key={`${item.id}-${index}`}
+                      className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 group"
+                    >
+                      {/* Product Image */}
+                      <div className="aspect-square overflow-hidden relative">
+                        {item.firebase_url ? (
+                          <img
+                            src={item.firebase_url}
+                            alt={item.product_name || 'Recommended product'}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                            onError={(e) => {
+                              e.target.src = 'https://via.placeholder.com/200x200?text=Image+Not+Found';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-gray-500 text-xs">No Image</span>
+                          </div>
+                        )}
+                        
+                        {/* Similarity Badge */}
+                        <div className="absolute top-2 right-2 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
+                          <FaStar className="mr-1" />
+                          {(item.score * 100).toFixed(0)}%
+                        </div>
+                      </div>
+
+                      {/* Product Info */}
+                      <div className="p-3">
+                        <h3 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1">
+                          {item.product_name || 'Fashion Item'}
+                        </h3>
+                        
+                        {item.price && (
+                          <div className="text-lg font-bold text-purple-600 mb-2">
+                            ${item.price.toFixed(2)}
+                          </div>
+                        )}
+
+                        {/* Match Score Bar */}
+                        <div className="flex items-center text-xs">
+                          <span className="text-gray-500 mr-2">Match</span>
+                          <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                            <div 
+                              className="bg-purple-600 h-1.5 rounded-full transition-all duration-300"
+                              style={{ width: `${item.score * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="text-center mt-6">
+                <a 
+                  href="/recommendations" 
+                  className="inline-flex items-center px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  <FaHeart className="mr-2" />
+                  View All Recommendations
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Description */}
+        <div className="text-center mb-8">
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Browse through our collection of fashion items. Find styles, compare prices, and discover your next favorite piece.
           </p>

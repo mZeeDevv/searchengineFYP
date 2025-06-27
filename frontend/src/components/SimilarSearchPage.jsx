@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { searchSimilarImages } from '../services/api';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase';
 
 const SimilarSearchPage = () => {
   const [file, setFile] = useState(null);
@@ -9,6 +11,16 @@ const SimilarSearchPage = () => {
   const [searchPerformed, setSearchPerformed] = useState(false);
   const [imageLoadingStates, setImageLoadingStates] = useState({});
   const [imageErrors, setImageErrors] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Set up auth state listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleSearch = async () => {
     if (!file) return;
@@ -18,7 +30,15 @@ const SimilarSearchPage = () => {
     setSearchPerformed(false);
     
     try {
-      const searchResult = await searchSimilarImages(file, 10, 0.5); // 10 results, 0.5 threshold
+      // Pass user ID if user is logged in
+      const userId = currentUser ? currentUser.uid : null;
+      if (userId) {
+        console.log('👤 User is logged in, will save search embeddings for user:', userId);
+      } else {
+        console.log('👤 User is not logged in, search embeddings will not be saved');
+      }
+      
+      const searchResult = await searchSimilarImages(file, 10, 0.5, userId); // 10 results, 0.5 threshold
       
       setResults(searchResult.similar_images || []);
       setSearchPerformed(true);

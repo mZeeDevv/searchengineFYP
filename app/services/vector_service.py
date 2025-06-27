@@ -24,6 +24,7 @@ class QdrantVectorService:
                 timeout=30  # Increased timeout for serverless
             )
             self.collection_name = config.QDRANT_COLLECTION_NAME
+            self.search_embeddings_collection = "user_search_embeddings"  # New collection for search history
             self.vector_size = config.VECTOR_SIZE
         except Exception as e:
             logger.error(f"Failed to initialize Qdrant client: {e}")
@@ -31,12 +32,13 @@ class QdrantVectorService:
             raise
         
     async def initialize_collection(self):
-        """Create the collection if it doesn't exist"""
+        """Create the collections if they don't exist"""
         try:
             collections = self.client.get_collections()
             collection_names = [col.name for col in collections.collections]
             print(f"🔍 DEBUG: Existing collections: {collection_names}")
             
+            # Initialize main fashion embeddings collection
             if self.collection_name not in collection_names:
                 print(f"📁 Creating new collection: {self.collection_name}")
                 self.client.create_collection(
@@ -54,10 +56,57 @@ class QdrantVectorService:
                 print(f"   Distance: {collection_info.config.params.vectors.distance}")
                 print(f"   Points count: {collection_info.points_count}")
                 logger.info(f"Collection {self.collection_name} already exists")
+            
+            # Initialize search embeddings collection
+            if self.search_embeddings_collection not in collection_names:
+                print(f"📁 Creating new search embeddings collection: {self.search_embeddings_collection}")
+                self.client.create_collection(
+                    collection_name=self.search_embeddings_collection,
+                    vectors_config=VectorParams(
+                        size=self.vector_size,
+                        distance=Distance.COSINE
+                    )
+                )
+                
+                # Create payload index for user_uid field to enable filtering
+                print(f"📇 Creating payload index for user_uid field...")
+                self.client.create_payload_index(
+                    collection_name=self.search_embeddings_collection,
+                    field_name="user_uid",
+                    field_schema=models.PayloadSchemaType.KEYWORD
+                )
+                
+                logger.info(f"Created new search embeddings collection: {self.search_embeddings_collection}")
+            else:
+                search_collection_info = self.client.get_collection(self.search_embeddings_collection)
+                print(f"📁 Search embeddings collection {self.search_embeddings_collection} exists:")
+                print(f"   Vector size: {search_collection_info.config.params.vectors.size}")
+                print(f"   Distance: {search_collection_info.config.params.vectors.distance}")
+                print(f"   Points count: {search_collection_info.points_count}")
+                
+                # Check if payload index exists, create if not
+                try:
+                    collection_info = self.client.get_collection(self.search_embeddings_collection)
+                    payload_indices = collection_info.payload_schema
+                    if "user_uid" not in payload_indices:
+                        print(f"📇 Creating missing payload index for user_uid field...")
+                        self.client.create_payload_index(
+                            collection_name=self.search_embeddings_collection,
+                            field_name="user_uid",
+                            field_schema=models.PayloadSchemaType.KEYWORD
+                        )
+                        print(f"✅ Payload index for user_uid created")
+                    else:
+                        print(f"✅ Payload index for user_uid already exists")
+                except Exception as index_error:
+                    print(f"⚠️ Could not check/create payload index: {index_error}")
+                
+                logger.info(f"Search embeddings collection {self.search_embeddings_collection} already exists")
+                
             return True
         except Exception as e:
-            logger.error(f"Error initializing collection: {str(e)}")
-            print(f"❌ Error initializing collection: {str(e)}")
+            logger.error(f"Error initializing collections: {str(e)}")
+            print(f"❌ Error initializing collections: {str(e)}")
             return False
 
     async def store_embedding(
@@ -370,6 +419,211 @@ class QdrantVectorService:
         except Exception as e:
             logger.error(f"Error in complete similarity search: {str(e)}")
             raise Exception(f"Failed to perform complete similarity search: {str(e)}")
+
+    async def store_search_embedding(
+        self,
+        embedding: List[float],
+        user_uid: str,
+        search_query_filename: str,
+        similar_results_count: int,
+        search_timestamp: str = None
+    ) -> str:
+        """Store user search embedding for future recommendations"""
+        try:
+            point_id = str(uuid.uuid4())
+            
+            if search_timestamp is None:
+                from datetime import datetime
+                search_timestamp = datetime.now().isoformat()
+            
+            payload = {
+                "user_uid": user_uid,
+                "search_query_filename": search_query_filename,
+                "similar_results_count": similar_results_count,
+                "search_timestamp": search_timestamp,
+                "search_type": "similarity_search"
+            }
+            
+            print(f"🔍 DEBUG: Storing search embedding:")
+            print(f"   User UID: {user_uid}")
+            print(f"   Query filename: {search_query_filename}")
+            print(f"   Similar results found: {similar_results_count}")
+            print(f"   Search timestamp: {search_timestamp}")
+            print(f"   Embedding length: {len(embedding)}")
+            
+            # Validation
+            if not isinstance(embedding, list) or len(embedding) != self.vector_size:
+                raise ValueError(f"❌ Invalid embedding shape. Expected {self.vector_size} floats, got {len(embedding)}")
+            if any(x is None for x in embedding):
+                raise ValueError("❌ Embedding contains None values")
+
+            # Convert to float
+            embedding = [float(x) for x in embedding]
+
+            point = PointStruct(
+                id=point_id,
+                vector=embedding,
+                payload=payload
+            )
+
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(
+                None,
+                functools.partial(
+                    self.client.upsert,
+                    collection_name=self.search_embeddings_collection,
+                    points=[point]
+                )
+            )
+
+            print(f"   ✅ Search embedding stored with ID: {point_id}")
+            logger.info(f"Stored search embedding for user {user_uid} with ID: {point_id}")
+            return point_id
+
+        except Exception as e:
+            logger.error(f"Error storing search embedding: {str(e)}")
+            raise Exception(f"Failed to store search embedding in Qdrant: {str(e)}")
+
+    async def store_user_search_embedding(
+        self, 
+        user_id: str, 
+        query_filename: str, 
+        query_embedding: List[float], 
+        similar_results_count: int
+    ):
+        """Store user search embedding for future recommendations"""
+        try:
+            from datetime import datetime
+            
+            # Generate unique ID for the search entry
+            search_id = str(uuid.uuid4())
+            
+            # Create point data
+            point_data = PointStruct(
+                id=search_id,
+                vector=query_embedding,
+                payload={
+                    "user_uid": user_id,
+                    "search_query_filename": query_filename,
+                    "similar_results_count": similar_results_count,
+                    "search_timestamp": datetime.utcnow().isoformat(),
+                    "search_type": "user_search"
+                }
+            )
+            
+            # Store in Qdrant
+            result = self.client.upsert(
+                collection_name=self.search_embeddings_collection,
+                points=[point_data]
+            )
+            
+            logger.info(f"Stored user search embedding for user {user_id}, search_id: {search_id}")
+            return {
+                "search_id": search_id,
+                "status": "stored",
+                "user_uid": user_id,
+                "similar_results_count": similar_results_count
+            }
+            
+        except Exception as e:
+            logger.error(f"Error storing user search embedding: {str(e)}")
+            raise Exception(f"Failed to store user search embedding: {str(e)}")
+
+    async def get_user_search_history(self, user_uid: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get user's search history for recommendations"""
+        try:
+            # Use scroll to get user's search history
+            points, _ = self.client.scroll(
+                collection_name=self.search_embeddings_collection,
+                scroll_filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="user_uid",
+                            match=models.MatchValue(value=user_uid)
+                        )
+                    ]
+                ),
+                limit=limit,
+                with_payload=True,
+                with_vectors=True
+            )
+            
+            results = []
+            for point in points:
+                search_data = {
+                    "search_id": str(point.id),
+                    "user_uid": point.payload.get("user_uid"),
+                    "search_query_filename": point.payload.get("search_query_filename"),
+                    "similar_results_count": point.payload.get("similar_results_count"),
+                    "search_timestamp": point.payload.get("search_timestamp"),
+                    "search_type": point.payload.get("search_type"),
+                    "embedding": point.vector
+                }
+                results.append(search_data)
+            
+            # Sort by search_timestamp (most recent first)
+            results.sort(key=lambda x: x.get("search_timestamp", ""), reverse=True)
+            
+            logger.info(f"Retrieved {len(results)} search history entries for user {user_uid}")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Error retrieving user search history: {str(e)}")
+            raise Exception(f"Failed to retrieve user search history: {str(e)}")
+
+    async def get_user_recommendations(self, user_uid: str, limit: int = 5) -> List[Dict[str, Any]]:
+        """Get product recommendations based on user's search history"""
+        try:
+            # First, get user's search history
+            search_history = await self.get_user_search_history(user_uid, limit=10)
+            
+            if not search_history:
+                logger.info(f"No search history found for user {user_uid}")
+                return []
+            
+            # Get the most recent search embeddings (last 3 searches)
+            recent_searches = search_history[:3]
+            recommendations = []
+            
+            for search in recent_searches:
+                if search.get("embedding"):
+                    # Search for similar products based on this search embedding
+                    similar_products = await self.search_similar_images(
+                        query_embedding=search["embedding"],
+                        limit=10,  # Get more to have variety
+                        score_threshold=0.5  # Lower threshold for recommendations
+                    )
+                    
+                    # Add search context to each recommendation
+                    for product in similar_products:
+                        product["recommendation_source"] = {
+                            "search_id": search["search_id"],
+                            "search_filename": search["search_query_filename"],
+                            "search_timestamp": search["search_timestamp"]
+                        }
+                        recommendations.append(product)
+            
+            # Remove duplicates based on product ID and sort by score
+            seen_ids = set()
+            unique_recommendations = []
+            
+            for rec in recommendations:
+                if rec["id"] not in seen_ids:
+                    seen_ids.add(rec["id"])
+                    unique_recommendations.append(rec)
+            
+            # Sort by similarity score (highest first)
+            unique_recommendations.sort(key=lambda x: x["score"], reverse=True)
+            
+            # Return top recommendations
+            final_recommendations = unique_recommendations[:limit]
+            
+            logger.info(f"Generated {len(final_recommendations)} recommendations for user {user_uid}")
+            return final_recommendations
+            
+        except Exception as e:
+            logger.error(f"Error generating recommendations for user {user_uid}: {str(e)}")
+            raise Exception(f"Failed to generate recommendations: {str(e)}")
 
 # Global instance
 vector_service = QdrantVectorService()
