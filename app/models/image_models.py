@@ -37,7 +37,8 @@ class VectorStoreResponse(BaseModel):
     firebase_url: Optional[str] = None
     firebase_path: Optional[str] = None
     firebase_uploaded: Optional[bool] = None
-    user_id: Optional[str] = None
+    price: Optional[float] = None
+    product_name: Optional[str] = None
 
 class SimilarImageResponse(BaseModel):
     """Response model for similar image search"""

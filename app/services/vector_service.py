@@ -70,10 +70,11 @@ class QdrantVectorService:
         model_used: str,
         firebase_url: Optional[str] = None,
         firebase_path: Optional[str] = None,
-        user_id: Optional[str] = None,
+        price: Optional[float] = None,
+        product_name: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None
     ) -> str:
-        """Store image embedding in Qdrant with optional user ID"""
+        """Store image embedding in Qdrant with price and product name"""
         try:
             point_id = str(uuid.uuid4())
             payload = {
@@ -83,7 +84,8 @@ class QdrantVectorService:
                 "processing_time": processing_time,
                 "model_used": model_used,
                 "upload_timestamp": "2025-06-24",
-                "user_id": user_id  # Store user_id (will be None if not provided)
+                "price": price,  # Store price
+                "product_name": product_name  # Store product name
             }
             
             # Add Firebase information if provided
@@ -99,7 +101,8 @@ class QdrantVectorService:
             print(f"   Point ID: {point_id}")
             print(f"   Embedding length: {len(embedding)}")
             print(f"   First 5 values: {embedding[:5]}")
-            print(f"   User ID: {user_id if user_id else 'None (anonymous)'}")
+            print(f"   Product Name: {product_name}" if product_name else "   Product Name: Not specified")
+            print(f"   Price: ${price:.2f}" if price else "   Price: Not specified")
             if firebase_url:
                 print(f"   Firebase URL: {firebase_url}")
             if firebase_path:
@@ -235,6 +238,138 @@ class QdrantVectorService:
         except Exception as e:
             logger.error(f"Error retrieving embedding {vector_id}: {str(e)}")
             return None
+
+    async def get_vector(self, vector_id: str) -> Optional[Dict[str, Any]]:
+        """Get a vector by its ID (alias for get_stored_embedding)"""
+        return await self.get_stored_embedding(vector_id)
+
+    async def delete_vector(self, vector_id: str) -> bool:
+        """Delete a vector by its ID (alias for delete_embedding)"""
+        return await self.delete_embedding(vector_id)
+
+    async def list_all_embeddings(self, limit: int = 100, offset: int = 0) -> List[Dict[str, Any]]:
+        """List all stored embeddings with metadata"""
+        try:
+            # Use scroll to get all points with pagination
+            points, _ = self.client.scroll(
+                collection_name=self.collection_name,
+                limit=limit,
+                offset=offset,
+                with_payload=True,
+                with_vectors=False  # Don't return vectors for performance
+            )
+            
+            results = []
+            for point in points:
+                # Convert point to dictionary format
+                embedding_data = {
+                    "vector_id": str(point.id),
+                    "filename": point.payload.get("filename", "Unknown"),
+                    "product_name": point.payload.get("product_name"),
+                    "price": point.payload.get("price"),
+                    "file_size": point.payload.get("file_size"),
+                    "content_type": point.payload.get("content_type"),
+                    "processing_time": point.payload.get("processing_time"),
+                    "model_used": point.payload.get("model_used"),
+                    "upload_timestamp": point.payload.get("upload_timestamp"),
+                    "firebase_url": point.payload.get("firebase_url"),
+                    "firebase_path": point.payload.get("firebase_path")
+                }
+                results.append(embedding_data)
+            
+            logger.info(f"Listed {len(results)} embeddings (limit: {limit}, offset: {offset})")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Error listing embeddings: {str(e)}")
+            raise Exception(f"Failed to list embeddings from Qdrant: {str(e)}")
+
+    async def retrieve_embedding(self, vector_id: str, include_vector: bool = False) -> Optional[Dict[str, Any]]:
+        """Retrieve a specific embedding by its vector ID"""
+        try:
+            points = self.client.retrieve(
+                collection_name=self.collection_name,
+                ids=[vector_id],
+                with_vectors=include_vector,
+                with_payload=True
+            )
+            
+            if not points:
+                return None
+                
+            point = points[0]
+            result = {
+                "vector_id": str(point.id),
+                "filename": point.payload.get("filename", "Unknown"),
+                "product_name": point.payload.get("product_name"),
+                "embedding_status": "found",
+                "vector_found": True,
+                "metadata": point.payload,
+                "model_used": point.payload.get("model_used")
+            }
+            
+            if include_vector:
+                result["embedding_full"] = point.vector
+                result["embedding_shape"] = [len(point.vector)] if point.vector else [0]
+                if point.vector:
+                    result["embedding_stats"] = {
+                        "min_value": round(min(point.vector), 6),
+                        "max_value": round(max(point.vector), 6),
+                        "avg_value": round(sum(point.vector) / len(point.vector), 6),
+                        "non_zero_count": sum(1 for x in point.vector if x != 0),
+                        "total_dimensions": len(point.vector)
+                    }
+            else:
+                result["embeddings_preview"] = point.vector[:100] if point.vector else []
+                
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error retrieving embedding {vector_id}: {str(e)}")
+            return None
+
+    async def search_similar_complete(self, query_embedding: List[float], limit: int = 5, score_threshold: float = 0.7, include_embeddings: bool = False) -> List[Dict[str, Any]]:
+        """Search for similar images with complete embedding data"""
+        try:
+            search_result = self.client.search(
+                collection_name=self.collection_name,
+                query_vector=query_embedding,
+                limit=limit,
+                score_threshold=score_threshold,
+                with_payload=True,
+                with_vectors=include_embeddings
+            )
+            
+            results = []
+            for hit in search_result:
+                result_data = {
+                    "vector_id": str(hit.id),
+                    "similarity_score": round(hit.score, 6),
+                    "filename": hit.payload.get("filename", "Unknown"),
+                    "product_name": hit.payload.get("product_name"),
+                    "price": hit.payload.get("price"),
+                    "firebase_url": hit.payload.get("firebase_url"),
+                    "metadata": hit.payload
+                }
+                
+                if include_embeddings and hit.vector:
+                    result_data["embedding"] = hit.vector
+                    result_data["embedding_stats"] = {
+                        "min_value": round(min(hit.vector), 6),
+                        "max_value": round(max(hit.vector), 6),
+                        "avg_value": round(sum(hit.vector) / len(hit.vector), 6),
+                        "non_zero_count": sum(1 for x in hit.vector if x != 0),
+                        "total_dimensions": len(hit.vector)
+                    }
+                    
+                results.append(result_data)
+            
+            logger.info(f"Complete search found {len(results)} similar images")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Error in complete similarity search: {str(e)}")
+            raise Exception(f"Failed to perform complete similarity search: {str(e)}")
 
 # Global instance
 vector_service = QdrantVectorService()

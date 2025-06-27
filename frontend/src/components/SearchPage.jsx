@@ -7,7 +7,7 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
   const [currentStep, setCurrentStep] = useState('upload'); // 'upload', 'search', 'results'
-  const [userId, setUserId] = useState(''); // For Firebase UID
+  const [price, setPrice] = useState(''); // For product price
   const [error, setError] = useState(null);
 
   const handleUploadAndStore = async () => {
@@ -18,7 +18,7 @@ const SearchPage = () => {
     
     try {
       console.log('📤 Uploading and storing image...');
-      const result = await uploadAndStoreImage(file, userId || null);
+      const result = await uploadAndStoreImage(file, price);
       
       console.log('✅ Upload successful:', result);
       setUploadResult(result);
@@ -60,7 +60,7 @@ const SearchPage = () => {
     setUploadResult(null);
     setCurrentStep('upload');
     setError(null);
-    setUserId('');
+    setPrice('');
   };
 
   return (
@@ -110,20 +110,26 @@ const SearchPage = () => {
       {/* Step 1: Upload */}
       {currentStep === 'upload' && (
         <>
-          {/* User ID Input */}
+          {/* Price Input */}
           <div className="w-full max-w-2xl mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Firebase User ID (Optional)
+              Product Price *
             </label>
-            <input
-              type="text"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              placeholder="Enter your Firebase UID (leave empty for anonymous)"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-2 text-gray-500 text-lg">$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="0.00"
+                required
+                className="w-full pl-8 pr-4 py-2 border border-pink-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+              />
+            </div>
             <p className="text-sm text-gray-500 mt-1">
-              💡 If no User ID is provided, the image will be stored as anonymous
+              � Enter the product price in USD
             </p>
           </div>
 
@@ -171,11 +177,11 @@ const SearchPage = () => {
           <div className="mb-16">
             <button
               onClick={handleUploadAndStore}
-              disabled={!file || loading}
+              disabled={!file || !price || loading}
               className={`
                 px-12 py-4 rounded-xl text-lg font-medium transition-all duration-300 
                 flex items-center gap-3 border-0
-                ${!file || loading 
+                ${!file || !price || loading 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-pink-600 text-white cursor-pointer shadow-lg hover:bg-pink-700 hover:shadow-xl'
                 }
@@ -218,7 +224,7 @@ const SearchPage = () => {
                 <p className="text-green-700"><strong>Filename:</strong> {uploadResult.filename}</p>
                 <p className="text-green-700"><strong>Vector ID:</strong> {uploadResult.vector_id}</p>
                 <p className="text-green-700"><strong>Processing Time:</strong> {uploadResult.processing_time}s</p>
-                <p className="text-green-700"><strong>User ID:</strong> {uploadResult.user_id || 'Anonymous'}</p>
+                <p className="text-green-700"><strong>Price:</strong> ${uploadResult.price || 'N/A'}</p>
               </div>
               
               <div>

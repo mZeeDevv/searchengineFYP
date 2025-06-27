@@ -20,7 +20,7 @@ const Home = () => {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
             <Link 
-              to="/search"
+              to="/find-similar"
               className="inline-flex items-center px-8 py-4 bg-white text-fashionvs-primary-600 font-semibold rounded-xl hover:bg-fashionvs-neutral-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               <FaSearch className="mr-3 h-5 w-5" />
@@ -179,7 +179,7 @@ const Home = () => {
             Join thousands of fashion enthusiasts who've discovered their perfect style with our AI-powered visual search
           </p>
           <Link
-            to="/search"
+            to="/find-similar"
             className="inline-flex items-center px-10 py-4 bg-fashionvs-primary-600 hover:bg-fashionvs-primary-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
           >
             <FaSearch className="mr-3 h-5 w-5" />

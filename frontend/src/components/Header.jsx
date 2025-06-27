@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaBars, FaTimes, FaSignOutAlt, FaCog, FaUserCircle } from 'react-icons/fa';
+import { FaUser, FaBars, FaTimes, FaSignOutAlt, FaCog, FaUserCircle, FaUserShield } from 'react-icons/fa';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
+import { useAdmin } from './admin/AdminContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,6 +11,7 @@ const Header = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
+  const { isAdmin } = useAdmin();
 
   // Toggle mobile menu
   const toggleMenu = () => {
@@ -77,16 +79,16 @@ const Header = () => {
               Home
             </Link>
             <Link 
-              to="/search" 
-              className="text-fashionvs-neutral-700 hover:text-fashionvs-primary-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
-            >
-              Upload & Store
-            </Link>
-            <Link 
               to="/find-similar" 
               className="text-fashionvs-neutral-700 hover:text-fashionvs-primary-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
             >
               Find Similar
+            </Link>
+            <Link 
+              to="/available-products" 
+              className="text-fashionvs-neutral-700 hover:text-fashionvs-primary-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+            >
+              Available Products
             </Link>
             <Link 
               to="/about" 
@@ -125,6 +127,19 @@ const Header = () => {
                 {/* Profile Dropdown Menu */}
                 {isProfileMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-fashionvs-neutral-200 rounded-lg shadow-lg py-1 z-10">
+                    {/* Admin Panel Link */}
+                    {isAdmin && (
+                      <>
+                        <Link 
+                          to="/admin" 
+                          className="flex items-center space-x-2 px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 hover:text-blue-800 w-full text-left font-medium"
+                        >
+                          <FaUserShield className="h-4 w-4" />
+                          <span>Admin Panel</span>
+                        </Link>
+                        <hr className="my-1 border-fashionvs-neutral-200" />
+                      </>
+                    )}
                     <Link 
                       to="/profile" 
                       className="flex items-center space-x-2 px-4 py-2 text-sm text-fashionvs-neutral-700 hover:bg-fashionvs-primary-50 hover:text-fashionvs-primary-600 w-full text-left"
@@ -188,16 +203,16 @@ const Header = () => {
               Home
             </Link>
             <Link
-              to="/search"
-              className="block px-3 py-2 text-base font-medium text-fashionvs-neutral-700 hover:text-fashionvs-primary-600 hover:bg-fashionvs-primary-50 rounded-md transition-colors duration-200"
-            >
-              Upload & Store
-            </Link>
-            <Link
               to="/find-similar"
               className="block px-3 py-2 text-base font-medium text-fashionvs-neutral-700 hover:text-fashionvs-primary-600 hover:bg-fashionvs-primary-50 rounded-md transition-colors duration-200"
             >
               Find Similar
+            </Link>
+            <Link
+              to="/available-products"
+              className="block px-3 py-2 text-base font-medium text-fashionvs-neutral-700 hover:text-fashionvs-primary-600 hover:bg-fashionvs-primary-50 rounded-md transition-colors duration-200"
+            >
+              Available Products
             </Link>
             <Link
               to="/about"
@@ -232,6 +247,16 @@ const Header = () => {
                     </div>
                   </div>
                 </div>
+                {/* Mobile Admin Panel Link */}
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="flex items-center space-x-2 px-3 py-2 text-base font-medium text-blue-700 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors duration-200"
+                  >
+                    <FaUserShield className="h-5 w-5" />
+                    <span>Admin Panel</span>
+                  </Link>
+                )}
                 <Link
                   to="/profile"
                   className="flex items-center space-x-2 px-3 py-2 text-base font-medium text-fashionvs-neutral-700 hover:text-fashionvs-primary-600 hover:bg-fashionvs-primary-50 rounded-md transition-colors duration-200"

@@ -20,12 +20,11 @@ export const fetchFromAPI = async (endpoint, options = {}) => {
 };
 
 // Upload image and store in Firebase + Qdrant (Complete Pipeline)
-export const uploadAndStoreImage = async (file, userId = null) => {
+export const uploadAndStoreImage = async (file, price, productName) => {
   const formData = new FormData();
   formData.append('file', file);
-  if (userId) {
-    formData.append('user_id', userId);
-  }
+  formData.append('price', price);
+  formData.append('product_name', productName);
 
   const response = await fetch(`${API_URL}/api/v1/vectors/upload-and-store`, {
     method: 'POST',
@@ -76,6 +75,20 @@ export const listAllEmbeddings = async () => {
   
   if (!response.ok) {
     throw new Error(`List failed: ${response.status}`);
+  }
+  
+  return response.json();
+};
+
+// Delete a product by vector ID (Admin only)
+export const deleteProduct = async (vectorId) => {
+  const response = await fetch(`${API_URL}/api/v1/vectors/delete/${vectorId}`, {
+    method: 'DELETE',
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Delete failed: ${response.status} - ${errorText}`);
   }
   
   return response.json();
