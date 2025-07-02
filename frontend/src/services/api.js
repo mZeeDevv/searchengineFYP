@@ -105,6 +105,18 @@ export const deleteProduct = async (vectorId) => {
   return response.json();
 };
 
+// Get product details by vector ID
+export const getProductById = async (vectorId) => {
+  const response = await fetch(`${API_URL}/api/v1/vectors/retrieve/${vectorId}`);
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Get product failed: ${response.status} - ${errorText}`);
+  }
+  
+  return response.json();
+};
+
 // Get user recommendations based on search history
 export const getUserRecommendations = async (userId, limit = 5) => {
   const response = await fetch(`${API_URL}/api/v1/vectors/recommendations/${userId}?limit=${limit}`, {

@@ -85,7 +85,7 @@ const AdminDashboard = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-white rounded-lg shadow-sm  p-6">
           <div className="flex items-center">
             <div className="p-3 bg-blue-100 rounded-lg">
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +99,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-white rounded-lg shadow-sm  p-6">
           <div className="flex items-center">
             <div className="p-3 bg-green-100 rounded-lg">
               <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,7 +113,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-white rounded-lg shadow-sm  p-6">
           <div className="flex items-center">
             <div className="p-3 bg-yellow-100 rounded-lg">
               <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,7 +127,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-white rounded-lg shadow-sm  p-6">
           <div className="flex items-center">
             <div className="p-3 bg-purple-100 rounded-lg">
               <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,16 +144,16 @@ const AdminDashboard = () => {
       </div>
 
       {/* Recent Products */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="bg-white rounded-lg shadow-sm ">
+        <div className="px-6 py-4">
           <h2 className="text-lg font-semibold text-gray-900">Recent Products</h2>
         </div>
         <div className="p-6">
           {recentProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {recentProducts.map((product, index) => (
-                <div key={product.vector_id || index} className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  <div className="aspect-square overflow-hidden bg-gray-50">
+                <div key={product.vector_id || index} className="bg-white  rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="aspect-w-1 aspect-h-1 max-h-48 overflow-hidden bg-gray-50">
                     {product.firebase_url ? (
                       <img
                         src={product.firebase_url}

@@ -16,6 +16,7 @@ import AdminLayout from './components/admin/AdminLayout';
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminAddProduct from './components/admin/AdminAddProduct';
 import AdminDeleteProduct from './components/admin/AdminDeleteProduct';
+import AdminUserFeedback from './components/admin/AdminUserFeedback';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
               <Route index element={<AdminDashboard />} />
               <Route path="add-product" element={<AdminAddProduct />} />
               <Route path="delete-product" element={<AdminDeleteProduct />} />
+              <Route path="user-feedback" element={<AdminUserFeedback />} />
             </Route>
 
             {/* Public Routes */}

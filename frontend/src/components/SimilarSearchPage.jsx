@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { searchSimilarImages } from '../services/api';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 
 const SimilarSearchPage = () => {
   const [file, setFile] = useState(null);
@@ -12,6 +13,12 @@ const SimilarSearchPage = () => {
   const [imageLoadingStates, setImageLoadingStates] = useState({});
   const [imageErrors, setImageErrors] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState('');
+  const [feedbackSatisfaction, setFeedbackSatisfaction] = useState('neutral');
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   // Set up auth state listener
   useEffect(() => {
@@ -98,6 +105,56 @@ const SimilarSearchPage = () => {
     setSearchPerformed(false);
     setImageLoadingStates({});
     setImageErrors({});
+    setShowFeedbackForm(false);
+    setFeedbackRating(0);
+    setFeedbackComment('');
+    setFeedbackSatisfaction('neutral');
+    setFeedbackSubmitted(false);
+  };
+
+  const submitFeedback = async () => {
+    if (feedbackRating === 0) {
+      setError("Please provide a star rating before submitting feedback");
+      return;
+    }
+
+    try {
+      setSubmittingFeedback(true);
+      
+      // Prepare the feedback data
+      const feedbackData = {
+        rating: feedbackRating,
+        satisfaction: feedbackSatisfaction,
+        comment: feedbackComment,
+        timestamp: serverTimestamp(),
+        search_results: results.map(result => ({
+          id: result.id,
+          score: result.score,
+          product_name: result.metadata?.product_name || 'Unknown'
+        })),
+        user_id: currentUser ? currentUser.uid : 'anonymous',
+        search_image_name: file ? file.name : 'unknown'
+      };
+      
+      // Add to Firestore
+      await addDoc(collection(db, "users_feedback"), feedbackData);
+      
+      console.log("✅ Feedback submitted successfully!", feedbackData);
+      
+      // Show success state
+      setFeedbackSubmitted(true);
+      setSubmittingFeedback(false);
+      
+      // Reset form after a delay
+      setTimeout(() => {
+        setShowFeedbackForm(false);
+      }, 3000);
+      
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      setError(`Failed to submit feedback: ${error.message}`);
+      setSubmittingFeedback(false);
+    }
   };
 
   const handleImageLoad = (resultId) => {
@@ -151,10 +208,10 @@ const SimilarSearchPage = () => {
       {/* Header */}
       <div className="text-center mb-16">
         <h1 className="text-5xl font-bold bg-gradient-to-r from-fashionvs-primary-700 to-fashionvs-primary-800 bg-clip-text text-transparent mb-4">
-          Find Similar Styles
+          Discover Similar Products
         </h1>
         <p className="text-xl text-fashionvs-neutral-600 font-light max-w-lg mx-auto">
-          Upload any fashion image and discover visually similar items from our database 🔍
+          Upload any fashion image and find matching products to shop right away �️
         </p>
       </div>
 
@@ -203,7 +260,7 @@ const SimilarSearchPage = () => {
             />
             <div className="p-4 bg-fashionvs-primary-50 text-center">
               <p className="text-fashionvs-primary-700 font-medium">
-                Ready to find similar styles!
+                Ready to find similar products!
               </p>
             </div>
           </div>
@@ -237,7 +294,7 @@ const SimilarSearchPage = () => {
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              Find Similar Styles
+              Find Similar Products
             </>
           )}
         </button>
@@ -251,10 +308,10 @@ const SimilarSearchPage = () => {
               {/* Results Header */}
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-fashionvs-neutral-800 mb-4">
-                  🎯 Found {results.length} Similar Styles
+                  🎯 Found {results.length} Similar Products
                 </h2>
                 <p className="text-xl text-fashionvs-neutral-600">
-                  Results sorted by similarity score (minimum 50% match)
+                  Browse these products based on your image search
                 </p>
                 
                 {/* Image loading progress */}
@@ -278,7 +335,7 @@ const SimilarSearchPage = () => {
                 {results.map((result, index) => (
                   <div
                     key={result.id || index}
-                    className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 animate-fadeIn"
+                    className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 animate-fadeIn cursor-pointer group"
                     style={{
                       animationDelay: `${index * 0.1}s`
                     }}
@@ -344,21 +401,28 @@ const SimilarSearchPage = () => {
                       )}
                     </div>
                     <div className="p-3 bg-white">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-fashionvs-neutral-700">
-                          Similarity
-                        </span>
-                        <span className="px-2 py-1 bg-fashionvs-primary-100 text-fashionvs-primary-800 text-sm font-medium rounded-full">
-                          {(result.score * 100).toFixed(1)}%
-                        </span>
+                      <div className="mb-2">
+                        <h3 className="text-sm font-medium text-fashionvs-neutral-800 truncate">
+                          {result.metadata?.product_name || 'Fashion Item ' + (index + 1)}
+                        </h3>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-fashionvs-primary-700 font-semibold">
+                            ${result.metadata?.price || ((19.99 + index * 5).toFixed(2))}
+                          </span>
+                          <span className="px-2 py-1 bg-fashionvs-primary-100 text-fashionvs-primary-800 text-xs font-medium rounded-full">
+                            {(result.score * 100).toFixed(0)}% match
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-xs text-fashionvs-neutral-500 space-y-1">
-                        <p className="truncate"><strong>File:</strong> {result.metadata?.filename || 'Unknown'}</p>
-                        {result.metadata?.user_id && (
-                          <p className="truncate"><strong>User:</strong> {result.metadata.user_id}</p>
-                        )}
-                        {result.metadata?.upload_timestamp && (
-                          <p><strong>Uploaded:</strong> {new Date(result.metadata.upload_timestamp).toLocaleDateString()}</p>
+                      <div className="text-xs text-fashionvs-neutral-500 space-y-1 border-t border-fashionvs-neutral-100 pt-2">
+                        <p><strong>Added:</strong> {result.metadata?.product_added_date ? 
+                          new Date(result.metadata.product_added_date).toLocaleDateString() : 
+                          result.metadata?.upload_timestamp ? 
+                          new Date(result.metadata.upload_timestamp).toLocaleDateString() : 
+                          'Recently added'}
+                        </p>
+                        {result.metadata?.brand && (
+                          <p className="truncate"><strong>Brand:</strong> {result.metadata.brand}</p>
                         )}
                       </div>
                     </div>
@@ -371,9 +435,9 @@ const SimilarSearchPage = () => {
               <svg className="w-16 h-16 text-fashionvs-neutral-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.2-5.5-3M3 12a9 9 0 0118 0 9 9 0 01-18 0z" />
               </svg>
-              <h3 className="text-xl font-medium text-fashionvs-neutral-800 mb-2">No Similar Images Found</h3>
+              <h3 className="text-xl font-medium text-fashionvs-neutral-800 mb-2">No Similar Products Found</h3>
               <p className="text-fashionvs-neutral-600 mb-6">
-                No images found with similarity above 50%. Try uploading a different fashion image.
+                No products found with similarity above 50%. Try uploading a different fashion image.
               </p>
             </div>
           )}
@@ -389,7 +453,145 @@ const SimilarSearchPage = () => {
               </svg>
               Search Another Image
             </button>
+            
+            {/* Feedback button */}
+            {results.length > 0 && !showFeedbackForm && !feedbackSubmitted && (
+              <button 
+                onClick={() => setShowFeedbackForm(true)}
+                className="mt-6 px-6 py-2 bg-white border border-fashionvs-primary-300 text-fashionvs-primary-700 rounded-lg hover:bg-fashionvs-primary-50 transition-colors duration-300 flex items-center gap-2 mx-auto"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+                Rate Your Search Experience
+              </button>
+            )}
+            
+            {/* Feedback submitted message */}
+            {feedbackSubmitted && (
+              <div className="mt-6 p-4 bg-fashionvs-primary-50 border border-fashionvs-primary-300 rounded-lg">
+                <div className="flex items-center justify-center space-x-2">
+                  <svg className="w-6 h-6 text-fashionvs-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-fashionvs-primary-700 font-medium">Thank you for your feedback!</span>
+                </div>
+              </div>
+            )}
           </div>
+          
+          {/* Feedback Form */}
+          {showFeedbackForm && !feedbackSubmitted && (
+            <div className="mt-12 w-full max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-6 border border-fashionvs-primary-100 animate-fadeIn">
+              <h3 className="text-xl font-medium text-fashionvs-primary-700 mb-4 text-center">
+                Your Feedback Matters
+              </h3>
+              
+              <div className="mb-6">
+                <p className="text-sm text-fashionvs-neutral-600 mb-3">How would you rate the search results?</p>
+                <div className="flex justify-center space-x-3">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFeedbackRating(star)}
+                      className={`p-1 focus:outline-none transition-transform ${feedbackRating >= star ? 'text-fashionvs-accent-gold scale-110' : 'text-fashionvs-neutral-300'}`}
+                    >
+                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                      </svg>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-sm text-fashionvs-neutral-600 mb-3">How satisfied are you with the matched products?</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackSatisfaction('unsatisfied')}
+                    className={`p-3 rounded-lg border ${feedbackSatisfaction === 'unsatisfied' ? 'bg-red-50 border-red-300 text-red-600' : 'border-gray-200 hover:bg-gray-50'}`}
+                  >
+                    <div className="flex flex-col items-center">
+                      <svg className="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-7.536 5.879a1 1 0 001.415 0 3 3 0 014.242 0 1 1 0 001.415-1.415 5 5 0 00-7.072 0 1 1 0 000 1.415z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs">Unsatisfied</span>
+                    </div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackSatisfaction('neutral')}
+                    className={`p-3 rounded-lg border ${feedbackSatisfaction === 'neutral' ? 'bg-gray-100 border-gray-300 text-gray-700' : 'border-gray-200 hover:bg-gray-50'}`}
+                  >
+                    <div className="flex flex-col items-center">
+                      <svg className="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-3 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs">Neutral</span>
+                    </div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackSatisfaction('satisfied')}
+                    className={`p-3 rounded-lg border ${feedbackSatisfaction === 'satisfied' ? 'bg-green-50 border-green-300 text-green-600' : 'border-gray-200 hover:bg-gray-50'}`}
+                  >
+                    <div className="flex flex-col items-center">
+                      <svg className="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-3 5.5a2.5 2.5 0 005 0v-1a.5.5 0 00-.5-.5h-4a.5.5 0 00-.5.5v1z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs">Satisfied</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <label htmlFor="feedbackComment" className="block text-sm text-fashionvs-neutral-600 mb-2">
+                  Additional comments (optional)
+                </label>
+                <textarea
+                  id="feedbackComment"
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  className="w-full px-3 py-2 border border-fashionvs-neutral-200 rounded-lg focus:ring-2 focus:ring-fashionvs-primary-300 focus:border-fashionvs-primary-300 resize-none"
+                  rows="3"
+                  placeholder="Tell us more about your experience..."
+                ></textarea>
+              </div>
+              
+              <div className="flex justify-center space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowFeedbackForm(false)}
+                  className="px-4 py-2 border border-fashionvs-neutral-300 text-fashionvs-neutral-700 rounded-lg hover:bg-fashionvs-neutral-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={submitFeedback}
+                  disabled={submittingFeedback}
+                  className="px-4 py-2 bg-fashionvs-primary-600 text-white rounded-lg hover:bg-fashionvs-primary-700 flex items-center space-x-2"
+                >
+                  {submittingFeedback ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <span>Submit Feedback</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -408,9 +610,9 @@ const SimilarSearchPage = () => {
           <div>
             <p className="mb-2">🎯 <strong>Results Include:</strong></p>
             <ul className="list-disc list-inside space-y-1 ml-4">
-              <li>Similarity percentage score</li>
-              <li>Original filename and upload date</li>
-              <li>User information (if available)</li>
+              <li>Product name and pricing</li>
+              <li>Product addition date</li>
+              <li>Brand information (when available)</li>
             </ul>
           </div>
         </div>
