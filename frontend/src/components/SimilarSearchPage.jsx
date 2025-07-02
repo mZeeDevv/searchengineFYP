@@ -147,32 +147,32 @@ const SimilarSearchPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col items-center justify-start py-10 px-4 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-fashionvs-primary-50 via-fashionvs-neutral-50 to-fashionvs-secondary-50 flex flex-col items-center justify-start py-10 px-4 font-sans">
       {/* Header */}
       <div className="text-center mb-16">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+        <h1 className="text-5xl font-bold bg-gradient-to-r from-fashionvs-primary-700 to-fashionvs-primary-800 bg-clip-text text-transparent mb-4">
           Find Similar Styles
         </h1>
-        <p className="text-xl text-gray-600 font-light max-w-lg mx-auto">
+        <p className="text-xl text-fashionvs-neutral-600 font-light max-w-lg mx-auto">
           Upload any fashion image and discover visually similar items from our database 🔍
         </p>
       </div>
 
       {/* Error Display */}
       {error && (
-        <div className="w-full max-w-2xl mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+        <div className="w-full max-w-2xl mb-6 p-4 bg-red-50 border border-fashionvs-error/30 rounded-xl">
           <div className="flex items-center">
-            <svg className="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-5 h-5 text-fashionvs-error mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
-            <p className="text-red-800 font-medium">Error: {error}</p>
+            <p className="text-fashionvs-error font-medium">Error: {error}</p>
           </div>
         </div>
       )}
 
       {/* Upload Area */}
       <div className="w-full max-w-2xl mb-12">
-        <div className="border-2 border-dashed border-blue-300 rounded-xl p-12 text-center bg-blue-50 cursor-pointer transition-colors hover:bg-blue-100 mb-6">
+        <div className="border-2 border-dashed border-fashionvs-primary-300 rounded-xl p-12 text-center bg-fashionvs-primary-50 cursor-pointer transition-colors hover:bg-fashionvs-primary-100 mb-6">
           <label className="cursor-pointer block">
             <input
               type="file"
@@ -180,15 +180,15 @@ const SimilarSearchPage = () => {
               onChange={(e) => setFile(e.target.files[0])}
               className="hidden"
             />
-            <div className="mx-auto mb-4 h-16 w-16 text-blue-600">
+            <div className="mx-auto mb-4 h-16 w-16 text-fashionvs-primary-600">
               <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <h3 className="text-xl font-medium text-gray-900 mb-2">
+            <h3 className="text-xl font-medium text-fashionvs-neutral-800 mb-2">
               Upload Image to Search
             </h3>
-            <p className="text-gray-600">
+            <p className="text-fashionvs-neutral-600">
               Drag and drop or click to select a fashion image
             </p>
           </label>
@@ -201,8 +201,8 @@ const SimilarSearchPage = () => {
               alt="Search query"
               className="w-full h-72 object-cover"
             />
-            <div className="p-4 bg-blue-50 text-center">
-              <p className="text-blue-700 font-medium">
+            <div className="p-4 bg-fashionvs-primary-50 text-center">
+              <p className="text-fashionvs-primary-700 font-medium">
                 Ready to find similar styles!
               </p>
             </div>
@@ -220,7 +220,7 @@ const SimilarSearchPage = () => {
             flex items-center gap-3 border-0
             ${!file || loading 
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-              : 'bg-blue-600 text-white cursor-pointer shadow-lg hover:bg-blue-700 hover:shadow-xl'
+              : 'bg-fashionvs-primary-600 text-white cursor-pointer shadow-lg hover:bg-fashionvs-primary-700 hover:shadow-xl'
             }
           `}
         >
@@ -250,22 +250,22 @@ const SimilarSearchPage = () => {
             <>
               {/* Results Header */}
               <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                <h2 className="text-3xl font-bold text-fashionvs-neutral-800 mb-4">
                   🎯 Found {results.length} Similar Styles
                 </h2>
-                <p className="text-xl text-gray-600">
+                <p className="text-xl text-fashionvs-neutral-600">
                   Results sorted by similarity score (minimum 50% match)
                 </p>
                 
                 {/* Image loading progress */}
                 {Object.values(imageLoadingStates).some(loading => loading) && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="mt-4 p-3 bg-fashionvs-primary-50 border border-fashionvs-primary-200 rounded-lg">
                     <div className="flex items-center justify-center space-x-2">
-                      <svg className="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-4 w-4 text-fashionvs-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      <span className="text-sm text-blue-700">
+                      <span className="text-sm text-fashionvs-primary-700">
                         Loading images... ({Object.values(imageLoadingStates).filter(loading => !loading).length}/{Object.keys(imageLoadingStates).length} loaded)
                       </span>
                     </div>
@@ -288,24 +288,24 @@ const SimilarSearchPage = () => {
                         <>
                           {/* Loading spinner */}
                           {imageLoadingStates[result.id || index] && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                            <div className="absolute inset-0 flex items-center justify-center bg-fashionvs-primary-50">
                               <div className="flex flex-col items-center space-y-2">
-                                <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <svg className="animate-spin h-8 w-8 text-fashionvs-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                 </svg>
-                                <span className="text-xs text-gray-600">Loading image...</span>
+                                <span className="text-xs text-fashionvs-neutral-600">Loading image...</span>
                               </div>
                             </div>
                           )}
                           
                           {/* Error state */}
                           {imageErrors[result.id || index] ? (
-                            <div className="w-full h-full bg-red-50 border-2 border-red-200 flex flex-col items-center justify-center">
-                              <svg className="w-12 h-12 text-red-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-full h-full bg-red-50 border-2 border-fashionvs-error/30 flex flex-col items-center justify-center">
+                              <svg className="w-12 h-12 text-fashionvs-error mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                               </svg>
-                              <span className="text-xs text-red-600 text-center px-2">
+                              <span className="text-xs text-fashionvs-error text-center px-2">
                                 Failed to load image
                               </span>
                               <button 
@@ -313,7 +313,7 @@ const SimilarSearchPage = () => {
                                   setImageErrors(prev => ({ ...prev, [result.id || index]: false }));
                                   setImageLoadingStates(prev => ({ ...prev, [result.id || index]: true }));
                                 }}
-                                className="mt-2 px-2 py-1 bg-red-100 text-red-600 text-xs rounded hover:bg-red-200"
+                                className="mt-2 px-2 py-1 bg-red-100 text-fashionvs-error text-xs rounded hover:bg-red-200"
                               >
                                 Retry
                               </button>
@@ -345,14 +345,14 @@ const SimilarSearchPage = () => {
                     </div>
                     <div className="p-3 bg-white">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-sm font-medium text-fashionvs-neutral-700">
                           Similarity
                         </span>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                        <span className="px-2 py-1 bg-fashionvs-primary-100 text-fashionvs-primary-800 text-sm font-medium rounded-full">
                           {(result.score * 100).toFixed(1)}%
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500 space-y-1">
+                      <div className="text-xs text-fashionvs-neutral-500 space-y-1">
                         <p className="truncate"><strong>File:</strong> {result.metadata?.filename || 'Unknown'}</p>
                         {result.metadata?.user_id && (
                           <p className="truncate"><strong>User:</strong> {result.metadata.user_id}</p>
@@ -368,11 +368,11 @@ const SimilarSearchPage = () => {
             </>
           ) : (
             <div className="text-center py-12">
-              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-16 h-16 text-fashionvs-neutral-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.2-5.5-3M3 12a9 9 0 0118 0 9 9 0 01-18 0z" />
               </svg>
-              <h3 className="text-xl font-medium text-gray-900 mb-2">No Similar Images Found</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-xl font-medium text-fashionvs-neutral-800 mb-2">No Similar Images Found</h3>
+              <p className="text-fashionvs-neutral-600 mb-6">
                 No images found with similarity above 50%. Try uploading a different fashion image.
               </p>
             </div>
@@ -382,7 +382,7 @@ const SimilarSearchPage = () => {
           <div className="text-center">
             <button
               onClick={resetSearch}
-              className="px-8 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-300 flex items-center gap-2 mx-auto"
+              className="px-8 py-3 bg-fashionvs-secondary-600 text-white rounded-lg hover:bg-fashionvs-secondary-700 transition-colors duration-300 flex items-center gap-2 mx-auto"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -394,9 +394,9 @@ const SimilarSearchPage = () => {
       )}
 
       {/* Search Info */}
-      <div className="w-full max-w-4xl mt-16 p-6 bg-blue-50 rounded-xl border border-blue-200">
-        <h3 className="text-lg font-semibold text-blue-900 mb-3">How It Works:</h3>
-        <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
+      <div className="w-full max-w-4xl mt-16 p-6 bg-fashionvs-primary-50 rounded-xl border border-fashionvs-primary-200">
+        <h3 className="text-lg font-semibold text-fashionvs-primary-900 mb-3">How It Works:</h3>
+        <div className="grid md:grid-cols-2 gap-4 text-sm text-fashionvs-primary-800">
           <div>
             <p className="mb-2">🔍 <strong>Search Parameters:</strong></p>
             <ul className="list-disc list-inside space-y-1 ml-4">

@@ -10,6 +10,7 @@ from typing import List, Dict, Any, Optional
 import logging
 import asyncio
 import functools
+from datetime import datetime
 from app.config import config
 
 logger = logging.getLogger(__name__)
@@ -132,7 +133,7 @@ class QdrantVectorService:
                 "content_type": content_type,
                 "processing_time": processing_time,
                 "model_used": model_used,
-                "upload_timestamp": "2025-06-24",
+                "upload_timestamp": datetime.now().strftime("%Y-%m-%d"),
                 "price": price,  # Store price
                 "product_name": product_name  # Store product name
             }

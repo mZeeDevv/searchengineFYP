@@ -1,49 +1,63 @@
 @import "tailwindcss";
 
 @theme {
-  --color-fashionvs-primary-50: #fdf2f8;
-  --color-fashionvs-primary-100: #fce7f3;
-  --color-fashionvs-primary-200: #fbcfe8;
-  --color-fashionvs-primary-300: #f9a8d4;
-  --color-fashionvs-primary-400: #f472b6;
-  --color-fashionvs-primary-500: #ec4899;
-  --color-fashionvs-primary-600: #db2777;
-  --color-fashionvs-primary-700: #be185d;
-  --color-fashionvs-primary-800: #9d174d;
-  --color-fashionvs-primary-900: #831843;
+  --color-fashionvs-primary-50: #eaedec;
+  --color-fashionvs-primary-100: #d5dad8;
+  --color-fashionvs-primary-200: #abb5b2;
+  --color-fashionvs-primary-300: #82918c;
+  --color-fashionvs-primary-400: #596c65;
+  --color-fashionvs-primary-500: #31443d; /* Your requested color */
+  --color-fashionvs-primary-600: #293935;
+  --color-fashionvs-primary-700: #212e2c;
+  --color-fashionvs-primary-800: #182322;
+  --color-fashionvs-primary-900: #0e1c1a; /* Your requested darker color */
 
-  --color-fashionvs-secondary-50: #faf5ff;
-  --color-fashionvs-secondary-100: #f3e8ff;
-  --color-fashionvs-secondary-200: #e9d5ff;
-  --color-fashionvs-secondary-300: #d8b4fe;
-  --color-fashionvs-secondary-400: #c084fc;
-  --color-fashionvs-secondary-500: #a855f7;
-  --color-fashionvs-secondary-600: #9333ea;
-  --color-fashionvs-secondary-700: #7c3aed;
-  --color-fashionvs-secondary-800: #6b21a8;
-  --color-fashionvs-secondary-900: #581c87;
+  --color-fashionvs-secondary-50: #e6eae9;
+  --color-fashionvs-secondary-100: #cdd5d3;
+  --color-fashionvs-secondary-200: #9baaa7;
+  --color-fashionvs-secondary-300: #6c807c;
+  --color-fashionvs-secondary-400: #475652;
+  --color-fashionvs-secondary-500: #2e3c38;
+  --color-fashionvs-secondary-600: #26322f;
+  --color-fashionvs-secondary-700: #1e2826;
+  --color-fashionvs-secondary-800: #151e1c;
+  --color-fashionvs-secondary-900: #0c1412;
 
-  --color-fashionvs-neutral-50: #ffffff;
-  --color-fashionvs-neutral-100: #f9fafb;
-  --color-fashionvs-neutral-200: #f3f4f6;
-  --color-fashionvs-neutral-300: #e5e7eb;
-  --color-fashionvs-neutral-400: #9ca3af;
-  --color-fashionvs-neutral-500: #6b7280;
-  --color-fashionvs-neutral-600: #4b5563;
-  --color-fashionvs-neutral-700: #374151;
-  --color-fashionvs-neutral-800: #1f2937;
-  --color-fashionvs-neutral-900: #111827;
+  --color-fashionvs-neutral-50: #ecf0ef;
+  --color-fashionvs-neutral-100: #dae0df;
+  --color-fashionvs-neutral-200: #b6c2c0;
+  --color-fashionvs-neutral-300: #92a3a0;
+  --color-fashionvs-neutral-400: #6e8380;
+  --color-fashionvs-neutral-500: #4a5c58;
+  --color-fashionvs-neutral-600: #384542;
+  --color-fashionvs-neutral-700: #2a3532;
+  --color-fashionvs-neutral-800: #1c2522;
+  --color-fashionvs-neutral-900: #0e1513;
 
-  --color-fashionvs-success: #10b981;
-  --color-fashionvs-warning: #f59e0b;
-  --color-fashionvs-error: #ef4444;
-  --color-fashionvs-info: #8b5cf6;
+  --color-fashionvs-success: #2e6a56;
+  --color-fashionvs-warning: #b3842d;
+  --color-fashionvs-error: #913a3a;
+  --color-fashionvs-info: #31443d;
+
+  /* Accent colors for variety */
+  --color-fashionvs-accent-cream: #f0f4f2;
+  --color-fashionvs-accent-gold: #c9a53d;
+  --color-fashionvs-accent-terracotta: #a05c48;
+  --color-fashionvs-accent-mocha: #3a4d43;
 
   --font-family-sans: Inter, system-ui, sans-serif;
   --font-family-display: 'Playfair Display', serif;
   --font-family-fashion: Poppins, system-ui, sans-serif;
 
-  --shadow-fashion: 0 8px 32px rgba(219, 39, 119, 0.12);
+  --shadow-fashion: 0 8px 32px rgba(14, 28, 26, 0.28);
+  
+  /* Gradient variations using the dark green color */
+  --gradient-green-primary: linear-gradient(135deg, #31443d 0%, #212e2c 100%);
+  --gradient-green-dark: linear-gradient(135deg, #31443d 0%, #0e1c1a 100%);
+  --gradient-green-light: linear-gradient(135deg, #596c65 0%, #31443d 100%);
+  --gradient-green-accent: linear-gradient(135deg, #31443d 0%, #3a4d43 100%);
+  --gradient-green-gold: linear-gradient(135deg, #31443d 0%, #c9a53d 100%);
+  --gradient-green-to-white: linear-gradient(135deg, #31443d 0%, #ffffff 100%);
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -59,6 +73,17 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
 @keyframes fadeIn {
   0% { opacity: 0; transform: translateY(20px); }
   100% { opacity: 1; transform: translateY(0); }
@@ -69,6 +94,10 @@ body {
   animation: fadeIn 0.5s ease-out forwards;
 }
 
+.animate-pulse-slow {
+  animation: pulse 3s ease-in-out infinite;
+}
+
 /* Base styles */
 body {
   font-family: 'Inter', system-ui, sans-serif;
@@ -76,4 +105,46 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Playfair Display', serif;
+}
+
+@layer utilities {
+  .bg-size-200 {
+    background-size: 200% 100%;
+  }
+  .bg-pos-0 {
+    background-position: 0% center;
+  }
+  .bg-pos-100 {
+    background-position: 100% center;
+  }
+  
+  /* Gradient utility classes */
+  .bg-gradient-green-primary {
+    background: var(--gradient-green-primary);
+  }
+  .bg-gradient-green-dark {
+    background: var(--gradient-green-dark);
+  }
+  .bg-gradient-green-light {
+    background: var(--gradient-green-light);
+  }
+  .bg-gradient-green-accent {
+    background: var(--gradient-green-accent);
+  }
+  .bg-gradient-green-gold {
+    background: var(--gradient-green-gold);
+  }
+  .bg-gradient-green-to-white {
+    background: var(--gradient-green-to-white);
+  }
+  
+  /* Hover effect utilities for gradients */
+  .hover-gradient-shift {
+    background-size: 200% 100%;
+    background-position: 0% center;
+    transition: background-position 0.5s ease-in-out;
+  }
+  .hover-gradient-shift:hover {
+    background-position: 100% center;
+  }
 }

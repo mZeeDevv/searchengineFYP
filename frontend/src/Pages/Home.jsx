@@ -6,8 +6,8 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-fashionvs-primary-500 via-fashionvs-secondary-500 to-fashionvs-primary-700 text-white py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
+      <section className="relative bg-gradient-to-tr from-fashionvs-primary-900 via-fashionvs-primary-700 to-fashionvs-primary-500 text-white py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-7xl font-display font-bold mb-6 leading-tight">
             Discover Fashion with
@@ -21,13 +21,13 @@ const Home = () => {
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
             <Link 
               to="/find-similar"
-              className="inline-flex items-center px-8 py-4 bg-white text-fashionvs-primary-600 font-semibold rounded-xl hover:bg-fashionvs-neutral-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="inline-flex items-center px-8 py-4 bg-fashionvs-primary-800 text-white font-semibold rounded-xl hover:bg-fashionvs-primary-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               <FaSearch className="mr-3 h-5 w-5" />
               Start Visual Search
               <FaArrowRight className="ml-3 h-4 w-4" />
             </Link>
-            <button className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-xl hover:bg-white hover:text-fashionvs-primary-600 transition-all duration-300">
+            <button className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-xl hover:bg-fashionvs-primary-900/30 hover:border-transparent transition-all duration-300">
               <FaRocket className="mr-3 h-5 w-5" />
               Watch Demo
             </button>
@@ -52,10 +52,10 @@ const Home = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gradient-to-r from-fashionvs-primary-50 to-fashionvs-secondary-50">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-display font-bold text-fashionvs-neutral-900 mb-4">
+            <h2 className="text-4xl font-display font-bold text-fashionvs-primary-600 mb-4">
               How Our AI Magic Works
             </h2>
             <p className="text-xl text-fashionvs-neutral-600 max-w-3xl mx-auto font-light">
@@ -90,8 +90,8 @@ const Home = () => {
 
             <div className="text-center group">
               <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-fashion transition-all duration-300 group-hover:-translate-y-2">
-                <div className="bg-fashionvs-accent-gold/20 rounded-full p-4 w-20 h-20 mx-auto mb-6 group-hover:bg-fashionvs-accent-gold/30 transition-colors">
-                  <FaShoppingBag className="h-12 w-12 text-fashionvs-accent-gold mx-auto" />
+                <div  className="bg-fashionvs-secondary-100 rounded-full p-4 w-20 h-20 mx-auto mb-6 group-hover:bg-fashionvs-secondary-200 transition-colors">
+                  <FaShoppingBag className="h-12 w-12 text-fashionvs-secondary-600 mx-auto" />
                 </div>
                 <h3 className="text-2xl font-semibold text-fashionvs-neutral-900 mb-4">Discover & Shop</h3>
                 <p className="text-fashionvs-neutral-600 leading-relaxed">
@@ -142,8 +142,8 @@ const Home = () => {
               </div>
 
               <div className="flex items-start space-x-4">
-                <div className="bg-fashionvs-accent-sage/20 rounded-lg p-3 flex-shrink-0">
-                  <FaRocket className="h-6 w-6 text-fashionvs-accent-sage" />
+                <div className="bg-fashionvs-accent-terracotta/20 rounded-lg p-3 flex-shrink-0">
+                  <FaRocket className="h-6 w-6 text-fashionvs-accent-terracotta" />
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-fashionvs-neutral-900 mb-2">Lightning Fast Results</h3>
@@ -155,10 +155,10 @@ const Home = () => {
             </div>
 
             <div className="relative">
-              <div className="bg-gradient-to-br from-fashionvs-primary-100 to-fashionvs-secondary-100 rounded-2xl p-8 aspect-square flex items-center justify-center">
+              <div className="bg-white rounded-2xl p-8 aspect-square flex items-center justify-center shadow-lg">
                 <div className="text-center">
                   <FaBrain className="h-24 w-24 text-fashionvs-primary-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-fashionvs-neutral-900 mb-2">AI-Powered Intelligence</h3>
+                  <h3 className="text-2xl font-bold text-fashionvs-primary-700 mb-2">AI-Powered Intelligence</h3>
                   <p className="text-fashionvs-neutral-600">
                     Advanced computer vision and machine learning algorithms working 24/7 to understand fashion better than ever before.
                   </p>
@@ -170,12 +170,12 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-fashionvs-neutral-900 via-fashionvs-neutral-800 to-fashionvs-primary-900 text-white">
+      <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">
+          <h2 className="text-4xl md:text-5xl font-display font-bold mb-6 text-fashionvs-primary-600">
             Ready to Revolutionize Your Style?
           </h2>
-          <p className="text-xl font-light mb-8 text-fashionvs-neutral-300">
+          <p className="text-xl font-light mb-8 text-fashionvs-neutral-600">
             Join thousands of fashion enthusiasts who've discovered their perfect style with our AI-powered visual search
           </p>
           <Link
