@@ -8,6 +8,8 @@ import SearchPage from './components/SearchPage';
 import SimilarSearchPage from './components/SimilarSearchPage';
 import Login from './Pages/auth/Login';
 import Signup from './Pages/auth/Signup';
+import About from './Pages/About';
+import HowToUse from './Pages/HowToUse';
 
 // Admin Components
 import { AdminProvider } from './components/admin/AdminContext';
@@ -49,8 +51,8 @@ function App() {
                     <Route path="/find-similar" element={<SimilarSearchPage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
-                    <Route path="/about" element={<div className="py-20 text-center">About Page Coming Soon!!</div>} />
-                    <Route path="/how-to-use" element={<div className="py-20 text-center">How to Use Page Coming Soon</div>} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/how-to-use" element={<HowToUse />} />
                   </Routes>
                 </main>
                 <Footer />
